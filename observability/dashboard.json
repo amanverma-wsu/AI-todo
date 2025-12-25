@@ -1,0 +1,50 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/Lambda", "Duration", {"stat": "Average"}],
+          ["AWS/Lambda", "Errors", {"stat": "Sum"}],
+          ["AWS/Lambda", "Throttles", {"stat": "Sum"}],
+          ["AWS/Lambda", "Invocations", {"stat": "Sum"}],
+          ["AWS/Lambda", "ConcurrentExecutions", {"stat": "Maximum"}]
+        ],
+        "period": 300,
+        "stat": "Average",
+        "region": "us-east-1",
+        "title": "Lambda Metrics"
+      }
+    },
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/DynamoDB", "ConsumedReadCapacityUnits", {"stat": "Sum"}],
+          ["AWS/DynamoDB", "ConsumedWriteCapacityUnits", {"stat": "Sum"}],
+          ["AWS/DynamoDB", "UserErrors", {"stat": "Sum"}],
+          ["AWS/DynamoDB", "SystemErrors", {"stat": "Sum"}]
+        ],
+        "period": 300,
+        "stat": "Sum",
+        "region": "us-east-1",
+        "title": "DynamoDB Metrics"
+      }
+    },
+    {
+      "type": "metric",
+      "properties": {
+        "metrics": [
+          ["AWS/ApiGateway", "Count", {"stat": "Sum"}],
+          ["AWS/ApiGateway", "4XXError", {"stat": "Sum"}],
+          ["AWS/ApiGateway", "5XXError", {"stat": "Sum"}],
+          ["AWS/ApiGateway", "Latency", {"stat": "Average"}]
+        ],
+        "period": 300,
+        "stat": "Sum",
+        "region": "us-east-1",
+        "title": "API Gateway Metrics"
+      }
+    }
+  ]
+}

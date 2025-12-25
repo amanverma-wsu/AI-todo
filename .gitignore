@@ -1,0 +1,57 @@
+# Dependencies
+node_modules/
+lib/layers/shared/nodejs/node_modules/
+
+# Build outputs
+lib/
+!lib/layers/
+cdk.out/
+*.js
+*.d.ts
+*.js.map
+
+# Keep source TypeScript files
+!src/**/*.ts
+!infrastructure/**/*.ts
+!tests/**/*.ts
+
+# CDK
+cdk.context.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# AWS credentials (NEVER commit these)
+.aws/
+credentials
+*.pem
+*.key
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS files
+.DS_Store
+Thumbs.db
