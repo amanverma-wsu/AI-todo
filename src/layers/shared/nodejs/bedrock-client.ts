@@ -2,8 +2,8 @@ import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedroc
 
 const bedrockClient = new BedrockRuntimeClient({});
 
-// Use inference profile ID for Claude 3 Haiku (cross-region)
-const DEFAULT_MODEL_ID = 'us.anthropic.claude-3-haiku-20240307-v1:0';
+// Use Meta Llama 3.2 3B Instruct - cheap and fast
+const DEFAULT_MODEL_ID = 'us.meta.llama3-2-3b-instruct-v1:0';
 
 export interface BedrockModelConfig {
   modelId: string;
@@ -17,17 +17,11 @@ export const invokeBedrockModel = async (
 ): Promise<string> => {
   const { modelId, maxTokens = 1024, temperature = 0.7 } = config;
 
-  // Claude Messages API format
+  // Meta Llama format
   const payload = {
-    anthropic_version: 'bedrock-2023-05-31',
-    max_tokens: maxTokens,
+    prompt: `<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n`,
+    max_gen_len: maxTokens,
     temperature,
-    messages: [
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ],
   };
 
   const command = new InvokeModelCommand({
@@ -40,8 +34,8 @@ export const invokeBedrockModel = async (
   try {
     const response = await bedrockClient.send(command);
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-    // Claude response format
-    return responseBody.content?.[0]?.text || '';
+    // Llama response format
+    return responseBody.generation || '';
   } catch (error) {
     console.error('Bedrock invocation error:', error);
     throw error;
