@@ -2,6 +2,9 @@ import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedroc
 
 const bedrockClient = new BedrockRuntimeClient({});
 
+// Use inference profile ID for Claude 3 Haiku (cross-region)
+const DEFAULT_MODEL_ID = 'us.anthropic.claude-3-haiku-20240307-v1:0';
+
 export interface BedrockModelConfig {
   modelId: string;
   maxTokens?: number;
@@ -10,18 +13,21 @@ export interface BedrockModelConfig {
 
 export const invokeBedrockModel = async (
   prompt: string,
-  config: BedrockModelConfig = { modelId: 'amazon.titan-text-express-v1' }
+  config: BedrockModelConfig = { modelId: DEFAULT_MODEL_ID }
 ): Promise<string> => {
   const { modelId, maxTokens = 1024, temperature = 0.7 } = config;
 
-  // Amazon Titan Text format
+  // Claude Messages API format
   const payload = {
-    inputText: prompt,
-    textGenerationConfig: {
-      maxTokenCount: maxTokens,
-      temperature,
-      topP: 0.9,
-    },
+    anthropic_version: 'bedrock-2023-05-31',
+    max_tokens: maxTokens,
+    temperature,
+    messages: [
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ],
   };
 
   const command = new InvokeModelCommand({
@@ -34,8 +40,8 @@ export const invokeBedrockModel = async (
   try {
     const response = await bedrockClient.send(command);
     const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-    // Titan response format
-    return responseBody.results?.[0]?.outputText || '';
+    // Claude response format
+    return responseBody.content?.[0]?.text || '';
   } catch (error) {
     console.error('Bedrock invocation error:', error);
     throw error;
