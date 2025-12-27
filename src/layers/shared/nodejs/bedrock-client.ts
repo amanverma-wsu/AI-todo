@@ -5,8 +5,15 @@ const bedrockClient = new BedrockRuntimeClient({
   region: process.env.AWS_REGION || 'us-east-2' 
 });
 
-// Use Qwen3 32B - Alibaba's model
-const DEFAULT_MODEL_ID = 'qwen.qwen3-32b-v1:0';
+// Use smaller Meta Llama 3.2 1B model via inference profile for better throughput
+const DEFAULT_MODEL_ID = 'us.meta.llama3-2-1b-instruct-v1:0';
+
+// Reduced token limits to minimize throttling
+const TOKEN_LIMITS = {
+  suggestion: 200,  // Suggestions need ~200 tokens max
+  parsing: 100,     // JSON parsing needs ~100 tokens max
+  default: 256      // Conservative default
+};
 
 export interface BedrockModelConfig {
   modelId: string;
@@ -14,21 +21,27 @@ export interface BedrockModelConfig {
   temperature?: number;
 }
 
+// Exponential backoff retry configuration
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  baseDelayMs: 500,
+  maxDelayMs: 4000
+};
+
+// Sleep helper
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Invoke with exponential backoff retry
 export const invokeBedrockModel = async (
   prompt: string,
   config: BedrockModelConfig = { modelId: DEFAULT_MODEL_ID }
 ): Promise<string> => {
-  const { modelId, maxTokens = 1024, temperature = 0.7 } = config;
+  const { modelId, maxTokens = TOKEN_LIMITS.default, temperature = 0.7 } = config;
 
-  // Qwen format (OpenAI-compatible messages format)
+  // Llama 3.2 format
   const payload = {
-    messages: [
-      {
-        role: 'user',
-        content: prompt
-      }
-    ],
-    max_tokens: maxTokens,
+    prompt: `<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n\n${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n\n`,
+    max_gen_len: maxTokens,
     temperature: temperature,
     top_p: 0.9
   };
@@ -40,36 +53,58 @@ export const invokeBedrockModel = async (
     accept: 'application/json',
   });
 
-  try {
-    const response = await bedrockClient.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-    // Qwen response format
-    return responseBody.choices?.[0]?.message?.content || '';
-  } catch (error: any) {
-    console.error('Bedrock invocation error:', {
-      error: error.message,
-      code: error.name,
-      modelId,
-      region: process.env.AWS_REGION || 'us-east-2'
-    });
-    throw new Error(`AI service error: ${error.message || 'Model invocation failed'}`);
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt < RETRY_CONFIG.maxRetries; attempt++) {
+    try {
+      const response = await bedrockClient.send(command);
+      const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+      // Llama response format
+      return responseBody.generation || responseBody.choices?.[0]?.message?.content || '';
+    } catch (error: any) {
+      lastError = error;
+      
+      // Only retry on throttling errors
+      if (error.name === 'ThrottlingException' || error.message?.includes('throttl') || error.message?.includes('Too many tokens')) {
+        const delay = Math.min(
+          RETRY_CONFIG.baseDelayMs * Math.pow(2, attempt),
+          RETRY_CONFIG.maxDelayMs
+        );
+        console.warn(`Throttled (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries}), waiting ${delay}ms...`);
+        await sleep(delay);
+        continue;
+      }
+      
+      // Non-throttling errors fail immediately
+      console.error('Bedrock invocation error:', {
+        error: error.message,
+        code: error.name,
+        modelId,
+        region: process.env.AWS_REGION || 'us-east-2'
+      });
+      throw new Error(`AI service error: ${error.message || 'Model invocation failed'}`);
+    }
   }
+  
+  // All retries exhausted
+  console.error('Bedrock throttling persisted after retries:', lastError?.message);
+  throw new Error(`AI service throttled: ${lastError?.message || 'Rate limit exceeded'}`);
 };
 
 export const generateTaskSuggestion = async (taskDescription: string): Promise<string> => {
-  const prompt = `Based on the following task description, provide a concise categorization and any suggestions for improvement:
-  
-Task: "${taskDescription}"
+  // Shorter, more focused prompt to reduce token usage
+  const prompt = `Task: "${taskDescription}"
 
-Please provide:
-1. Suggested category (Work, Personal, Shopping, Health, Learning, etc.)
-2. Recommended priority (low, medium, high)
-3. Any helpful subtasks or tips
-
-Keep your response brief and actionable.`;
+Categorize this task briefly:
+1. Category (Work/Personal/Shopping/Health/Learning)
+2. Priority (low/medium/high)
+3. One tip`;
 
   try {
-    return await invokeBedrockModel(prompt);
+    return await invokeBedrockModel(prompt, { 
+      modelId: DEFAULT_MODEL_ID, 
+      maxTokens: TOKEN_LIMITS.suggestion  // Only 200 tokens needed
+    });
   } catch (error: any) {
     // Fallback response when Bedrock is unavailable (rate limits, etc.)
     console.warn('Bedrock unavailable, using fallback suggestion:', error.message);
@@ -199,26 +234,49 @@ const generateTaskSpecificTip = (task: string, category: string): string | null 
 };
 
 export const parseNaturalLanguageTask = async (naturalLanguageInput: string): Promise<{ title: string; description: string; category: string }> => {
-  const prompt = `Parse the following natural language task input and extract the title, description, and category. Respond in JSON format.
+  // Minimal prompt for JSON extraction
+  const prompt = `Extract from: "${naturalLanguageInput}"
+Return only JSON: {"title":"...","description":"...","category":"..."}`;
 
-Input: "${naturalLanguageInput}"
-
-Response format: {"title": "...", "description": "...", "category": "..."}`;
-
-  const response = await invokeBedrockModel(prompt);
   try {
+    const response = await invokeBedrockModel(prompt, {
+      modelId: DEFAULT_MODEL_ID,
+      maxTokens: TOKEN_LIMITS.parsing  // Only 100 tokens for JSON
+    });
+    
     // Extract JSON from response
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
     }
-  } catch (error) {
-    console.error('JSON parse error:', error);
+  } catch (error: any) {
+    console.warn('NL parsing failed, using input directly:', error.message);
   }
 
+  // Fallback: use rule-based extraction
+  return parseTaskFallback(naturalLanguageInput);
+};
+
+// Rule-based task parsing fallback
+const parseTaskFallback = (input: string): { title: string; description: string; category: string } => {
+  const inputLower = input.toLowerCase();
+  
+  // Detect category from keywords
+  let category = 'General';
+  if (inputLower.match(/buy|shop|groceries|order|purchase/)) category = 'Shopping';
+  else if (inputLower.match(/work|meeting|report|email|project|deadline/)) category = 'Work';
+  else if (inputLower.match(/exercise|gym|doctor|health|workout/)) category = 'Health';
+  else if (inputLower.match(/learn|study|read|course|practice/)) category = 'Learning';
+  else if (inputLower.match(/pay|bill|bank|money|budget/)) category = 'Finance';
+  else if (inputLower.match(/clean|fix|organize|home|laundry/)) category = 'Home';
+  else if (inputLower.match(/call|family|friend|meet|visit/)) category = 'Social';
+  
+  // Extract title (first sentence or phrase)
+  const title = input.split(/[.!?\n]/)[0].trim() || input.substring(0, 50);
+  
   return {
-    title: naturalLanguageInput,
-    description: '',
-    category: 'General',
+    title,
+    description: input.length > title.length ? input.substring(title.length).trim() : '',
+    category
   };
 };
