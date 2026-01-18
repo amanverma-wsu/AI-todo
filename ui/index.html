@@ -3,740 +3,1168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Todo App</title>
+    <title>Todo</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✓</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --success: #10b981;
-            --warning: #f59e0b;
+            --bg-primary: #fafafa;
+            --bg-secondary: #ffffff;
+            --bg-sidebar: #f4f4f5;
+            --bg-hover: #f4f4f5;
+            --bg-active: #e4e4e7;
+            --text-primary: #18181b;
+            --text-secondary: #52525b;
+            --text-tertiary: #a1a1aa;
+            --border: #e4e4e7;
+            --border-light: #f4f4f5;
+            --accent: #3b82f6;
+            --accent-light: rgba(59, 130, 246, 0.1);
+            --success: #22c55e;
+            --warning: #eab308;
             --danger: #ef4444;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --text: #1e293b;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
         }
+        
         .dark {
-            --primary: #818cf8;
-            --primary-dark: #6366f1;
-            --success: #34d399;
-            --warning: #fbbf24;
-            --danger: #f87171;
-            --bg: #0f172a;
-            --card-bg: #1e293b;
-            --text: #f1f5f9;
-            --text-muted: #94a3b8;
-            --border: #334155;
+            --bg-primary: #09090b;
+            --bg-secondary: #18181b;
+            --bg-sidebar: #0f0f10;
+            --bg-hover: #27272a;
+            --bg-active: #3f3f46;
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --text-tertiary: #71717a;
+            --border: #27272a;
+            --border-light: #1f1f23;
+            --accent: #60a5fa;
+            --accent-light: rgba(96, 165, 250, 0.15);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
+            font-size: 14px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
         
-        /* Header */
-        .header {
+        /* ===== APP LAYOUT ===== */
+        .app {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-            padding: 20px 0;
+            height: 100vh;
         }
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            background: linear-gradient(135deg, var(--primary), #a855f7);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .header-actions { display: flex; gap: 12px; align-items: center; }
-        .theme-toggle {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 18px;
-            transition: all 0.2s;
-        }
-        .theme-toggle:hover { border-color: var(--primary); }
         
-        /* Stats Cards */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: 240px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: width 0.2s ease;
         }
-        .stat-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
+        
+        .sidebar.collapsed {
+            width: 60px;
+        }
+        
+        .sidebar-header {
             padding: 16px;
-            text-align: center;
-            box-shadow: var(--shadow);
-        }
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        .stat-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .stat-card.overdue .stat-value { color: var(--danger); }
-        .stat-card.completed .stat-value { color: var(--success); }
-        
-        /* Add Todo Form */
-        .add-form {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow-lg);
-        }
-        .form-row {
             display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-        .form-row:last-child { margin-bottom: 0; }
-        input[type="text"], input[type="date"], textarea, select {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 14px;
-            background: var(--bg);
-            color: var(--text);
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        input:focus, textarea:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-        textarea { resize: vertical; min-height: 60px; }
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
             align-items: center;
-            gap: 6px;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid var(--border);
-            color: var(--text);
-        }
-        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
-        .btn-ai {
-            background: linear-gradient(135deg, #ec4899, #8b5cf6);
-            color: white;
-        }
-        .btn-ai:hover { transform: translateY(-1px); filter: brightness(1.1); }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        
-        /* Filters */
-        .filters {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-        }
-        .search-box {
-            flex: 1;
-            min-width: 200px;
-            position: relative;
-        }
-        .search-box input {
-            width: 100%;
-            padding-left: 40px;
-        }
-        .search-box::before {
-            content: "🔍";
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-        }
-        .filter-btn {
-            padding: 10px 16px;
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-            color: var(--text);
-        }
-        .filter-btn:hover, .filter-btn.active {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: rgba(99, 102, 241, 0.1);
-        }
-        
-        /* Todo List */
-        .todo-sections { display: flex; flex-direction: column; gap: 24px; }
-        .section-header {
-            display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-light);
         }
-        .section-title {
-            font-size: 14px;
+        
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             font-weight: 600;
-            color: var(--text-muted);
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+        
+        .sidebar-logo-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .sidebar.collapsed .sidebar-logo span {
+            display: none;
+        }
+        
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sidebar-toggle:hover {
+            background: var(--bg-hover);
+            color: var(--text-secondary);
+        }
+        
+        .sidebar-nav {
+            padding: 12px 8px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .nav-section {
+            margin-bottom: 24px;
+        }
+        
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+            padding: 0 12px;
+            margin-bottom: 8px;
         }
-        .section-count {
-            background: var(--border);
-            padding: 2px 8px;
-            border-radius: 12px;
+        
+        .sidebar.collapsed .nav-section-title {
+            display: none;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all 0.15s ease;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .nav-item:hover {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+        }
+        
+        .nav-item.active {
+            background: var(--bg-active);
+            color: var(--text-primary);
+        }
+        
+        .nav-item-icon {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+        
+        .nav-item-count {
+            margin-left: auto;
             font-size: 12px;
-            color: var(--text-muted);
+            color: var(--text-tertiary);
+            font-weight: 400;
         }
-        .todo-list {
-            background: var(--card-bg);
+        
+        .sidebar.collapsed .nav-item span:not(.nav-item-icon) {
+            display: none;
+        }
+        
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid var(--border-light);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+        
+        .user-menu:hover {
+            background: var(--bg-hover);
+        }
+        
+        .user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .user-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .sidebar.collapsed .user-info {
+            display: none;
+        }
+        
+        .theme-btn {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .theme-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-secondary);
+        }
+        
+        /* ===== MAIN CONTENT ===== */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .main-header {
+            padding: 20px 32px 0;
+            flex-shrink: 0;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .page-subtitle {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 32px;
+        }
+        
+        .content-container {
+            max-width: 680px;
+        }
+        
+        /* ===== UNIVERSAL INPUT ===== */
+        .universal-input-container {
+            margin-bottom: 32px;
+        }
+        
+        .universal-input {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .universal-input:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+        
+        .universal-input input {
+            flex: 1;
+            border: none;
+            background: none;
+            font-size: 14px;
+            color: var(--text-primary);
+            outline: none;
+            font-family: inherit;
+        }
+        
+        .universal-input input::placeholder {
+            color: var(--text-tertiary);
+        }
+        
+        .input-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .input-btn {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: 6px 8px;
+            border-radius: 6px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.15s ease;
+        }
+        
+        .input-btn:hover {
+            background: var(--bg-hover);
+            color: var(--text-secondary);
+        }
+        
+        .ai-sparkle-btn {
+            color: #8b5cf6;
+        }
+        
+        .ai-sparkle-btn:hover {
+            background: rgba(139, 92, 246, 0.1);
+            color: #7c3aed;
+        }
+        
+        .add-btn {
+            background: var(--accent);
+            color: white;
+            padding: 6px 12px;
+            font-weight: 500;
+        }
+        
+        .add-btn:hover {
+            background: #2563eb;
+            color: white;
+        }
+        
+        /* ===== AI POPOVER ===== */
+        .ai-popover-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+        }
+        
+        .ai-popover-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .ai-popover {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
             border-radius: 12px;
-            overflow: hidden;
-            box-shadow: var(--shadow);
+            width: 400px;
+            max-width: 90vw;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            z-index: 101;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
         }
-        .todo-item {
-            display: flex;
-            align-items: flex-start;
+        
+        .ai-popover.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .ai-popover-header {
             padding: 16px 20px;
             border-bottom: 1px solid var(--border);
-            gap: 14px;
-            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
-        .todo-item:last-child { border-bottom: none; }
-        .todo-item:hover { background: rgba(99, 102, 241, 0.03); }
-        .todo-checkbox {
-            width: 22px;
-            height: 22px;
+        
+        .ai-popover-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .ai-popover-title span {
+            font-size: 16px;
+        }
+        
+        .ai-popover-close {
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            font-size: 18px;
+            line-height: 1;
+        }
+        
+        .ai-popover-close:hover {
+            background: var(--bg-hover);
+            color: var(--text-secondary);
+        }
+        
+        .ai-popover-content {
+            padding: 8px;
+        }
+        
+        .ai-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .ai-option:hover {
+            background: var(--bg-hover);
+        }
+        
+        .ai-option-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background: var(--bg-hover);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        
+        .ai-option-text h4 {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+        
+        .ai-option-text p {
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+        
+        .ai-option-kbd {
+            margin-left: auto;
+            font-size: 11px;
+            color: var(--text-tertiary);
+            background: var(--bg-hover);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .ai-results-panel {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            max-height: 300px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .ai-results-panel.visible {
+            display: block;
+        }
+        
+        .ai-results-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+        }
+        
+        .ai-result-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 12px;
+            background: var(--bg-hover);
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .ai-result-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .ai-result-text {
+            font-size: 13px;
+            color: var(--text-primary);
+        }
+        
+        .ai-result-meta {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            margin-top: 2px;
+        }
+        
+        .ai-result-add {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .ai-result-add:hover {
+            background: #2563eb;
+        }
+        
+        .ai-loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-tertiary);
+            font-size: 13px;
+        }
+        
+        .ai-loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
             border: 2px solid var(--border);
-            border-radius: 6px;
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ===== TASK SECTIONS ===== */
+        .task-section {
+            margin-bottom: 32px;
+        }
+        
+        .task-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .task-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 0 4px;
+        }
+        
+        .task-section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-tertiary);
+        }
+        
+        .task-section-count {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            background: var(--bg-hover);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        
+        .task-list {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        /* ===== TASK ROW ===== */
+        .task-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-light);
+            gap: 12px;
+            transition: background 0.15s ease;
+            cursor: default;
+        }
+        
+        .task-row:last-child {
+            border-bottom: none;
+        }
+        
+        .task-row:hover {
+            background: var(--bg-hover);
+        }
+        
+        .task-row.completed {
+            opacity: 0.6;
+        }
+        
+        .task-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--border);
+            border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            margin-top: 2px;
-            transition: all 0.2s;
+            transition: all 0.15s ease;
         }
-        .todo-checkbox:hover { border-color: var(--primary); }
-        .todo-checkbox.completed {
+        
+        .task-checkbox:hover {
+            border-color: var(--accent);
+        }
+        
+        .task-row.completed .task-checkbox {
             background: var(--success);
             border-color: var(--success);
+        }
+        
+        .task-row.completed .task-checkbox::after {
+            content: "✓";
             color: white;
-        }
-        .todo-checkbox.completed::after { content: "✓"; font-size: 12px; }
-        .todo-content { flex: 1; min-width: 0; }
-        .todo-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
-        .todo-title { font-size: 15px; font-weight: 500; color: var(--text); }
-        .todo-item.completed .todo-title { text-decoration: line-through; color: var(--text-muted); }
-        .todo-description {
-            font-size: 13px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            line-height: 1.4;
-        }
-        .todo-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-        .badge {
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
         }
-        .badge-priority-high { background: #fef2f2; color: #dc2626; }
-        .badge-priority-medium { background: #fffbeb; color: #d97706; }
-        .badge-priority-low { background: #ecfdf5; color: #059669; }
-        .dark .badge-priority-high { background: #7f1d1d; color: #fca5a5; }
-        .dark .badge-priority-medium { background: #78350f; color: #fcd34d; }
-        .dark .badge-priority-low { background: #064e3b; color: #6ee7b7; }
-        .badge-category {
-            background: var(--bg);
-            color: var(--text-muted);
-            border: 1px solid var(--border);
+        
+        .task-content {
+            flex: 1;
+            min-width: 0;
         }
-        .badge-due { background: var(--bg); color: var(--text-muted); }
-        .badge-due.overdue { background: #fef2f2; color: #dc2626; }
-        .dark .badge-due.overdue { background: #7f1d1d; color: #fca5a5; }
-        .badge-tag {
-            background: rgba(99, 102, 241, 0.1);
-            color: var(--primary);
-        }
-        .todo-actions { display: flex; gap: 4px; }
-        .action-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            background: transparent;
-            border-radius: 6px;
-            cursor: pointer;
+        
+        .task-title {
             font-size: 14px;
-            transition: all 0.2s;
-            color: var(--text-muted);
-        }
-        .action-btn:hover { background: var(--bg); color: var(--text); }
-        .action-btn.delete:hover { background: #fef2f2; color: var(--danger); }
-        
-        /* AI Suggestion Box */
-        .ai-box {
-            background: linear-gradient(135deg, rgba(236,72,153,0.1), rgba(139,92,246,0.1));
-            border: 1px solid rgba(139,92,246,0.2);
-            border-radius: 12px;
-            padding: 16px;
-            margin-top: 12px;
-            display: none;
-        }
-        .ai-box.visible { display: block; animation: slideIn 0.3s ease; }
-        .ai-box-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .ai-box-title { font-size: 13px; font-weight: 600; color: #8b5cf6; }
-        .ai-box-close {
-            background: none;
-            border: none;
-            font-size: 18px;
-            cursor: pointer;
-            color: var(--text-muted);
-        }
-        .ai-box-content {
-            font-size: 13px;
-            line-height: 1.6;
-            color: var(--text);
-            white-space: pre-wrap;
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+            font-weight: 500;
+            color: var(--text-primary);
+            margin-bottom: 2px;
         }
         
-        /* AI Command Panel */
-        .ai-panel {
-            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 24px;
-            box-shadow: var(--shadow-lg);
+        .task-row.completed .task-title {
+            text-decoration: line-through;
+            color: var(--text-tertiary);
         }
-        .ai-panel-header {
+        
+        .task-meta {
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 16px;
         }
-        .ai-panel-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, #8b5cf6, #ec4899);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-        .ai-panel-title {
-            color: white;
-            font-size: 18px;
-            font-weight: 700;
-        }
-        .ai-panel-subtitle {
-            color: rgba(255,255,255,0.7);
-            font-size: 13px;
-        }
-        .ai-command-input {
-            width: 100%;
-            padding: 14px 18px;
-            border: 2px solid rgba(139, 92, 246, 0.3);
-            border-radius: 12px;
-            font-size: 15px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            margin-bottom: 12px;
-            transition: all 0.2s;
-        }
-        .ai-command-input::placeholder { color: rgba(255,255,255,0.5); }
-        .ai-command-input:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            background: rgba(255,255,255,0.15);
-        }
-        .ai-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .ai-action-btn {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .ai-action-btn.primary {
-            background: linear-gradient(135deg, #8b5cf6, #6366f1);
-            color: white;
-        }
-        .ai-action-btn.secondary {
-            background: rgba(255,255,255,0.15);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-        .ai-action-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .ai-action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
         
-        /* AI Results Panel */
-        .ai-results {
-            display: none;
-            margin-top: 16px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 16px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .ai-results.visible { display: block; animation: slideIn 0.3s ease; }
-        .ai-results-header {
+        .task-meta-item {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            gap: 4px;
+            font-size: 12px;
+            color: var(--text-tertiary);
         }
-        .ai-results-title {
-            color: #a5b4fc;
-            font-size: 14px;
-            font-weight: 600;
+        
+        .task-meta-item.overdue {
+            color: var(--danger);
         }
-        .ai-results-close {
+        
+        .task-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        
+        .task-due {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            white-space: nowrap;
+        }
+        
+        .task-due.overdue {
+            color: var(--danger);
+        }
+        
+        .task-due.today {
+            color: var(--accent);
+            font-weight: 500;
+        }
+        
+        .priority-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .priority-dot.high {
+            background: var(--danger);
+        }
+        
+        .priority-dot.medium {
+            background: var(--warning);
+        }
+        
+        .priority-dot.low {
+            background: var(--text-tertiary);
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+        
+        .task-row:hover .task-actions {
+            opacity: 1;
+        }
+        
+        .task-action-btn {
             background: none;
             border: none;
-            color: rgba(255,255,255,0.5);
-            font-size: 18px;
+            color: var(--text-tertiary);
             cursor: pointer;
-        }
-        .ai-results-content {
-            color: rgba(255,255,255,0.9);
-            font-size: 14px;
-            line-height: 1.7;
-        }
-        .ai-subtask {
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .ai-subtask-info { flex: 1; }
-        .ai-subtask-title {
-            color: white;
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-        .ai-subtask-meta {
-            color: rgba(255,255,255,0.6);
+            padding: 4px 6px;
+            border-radius: 4px;
             font-size: 12px;
-        }
-        .ai-subtask-add {
-            background: #10b981;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 6px 12px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .ai-subtask-add:hover { background: #059669; }
-        
-        /* Daily Plan Styles */
-        .ai-plan-task {
-            background: rgba(255,255,255,0.08);
-            border-left: 3px solid #8b5cf6;
-            padding: 10px 14px;
-            border-radius: 0 8px 8px 0;
-            margin-bottom: 6px;
-        }
-        .ai-plan-task.break {
-            border-left-color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-        }
-        .ai-insight {
-            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 12px;
-            border: 1px solid rgba(251, 191, 36, 0.3);
-        }
-        .ai-insight-title {
-            color: #fbbf24;
-            font-weight: 700;
-            font-size: 13px;
-            margin-bottom: 6px;
-        }
-        .ai-insight-content {
-            color: rgba(255,255,255,0.85);
-            font-size: 13px;
+            transition: all 0.15s ease;
         }
         
-        /* Empty State */
+        .task-action-btn:hover {
+            background: var(--bg-active);
+            color: var(--text-primary);
+        }
+        
+        .task-action-btn.delete:hover {
+            color: var(--danger);
+        }
+        
+        /* ===== EMPTY STATE ===== */
         .empty-state {
-            padding: 60px 20px;
             text-align: center;
-            color: var(--text-muted);
+            padding: 60px 20px;
         }
-        .empty-state-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
-        .empty-state-text { font-size: 14px; }
         
-        /* Loading */
-        .loading { text-align: center; padding: 40px; color: var(--text-muted); }
-        .spinner {
-            width: 32px;
-            height: 32px;
-            border: 3px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 12px;
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.3;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
         
-        /* Edit Modal */
+        .empty-state-text {
+            font-size: 14px;
+            color: var(--text-tertiary);
+        }
+        
+        /* ===== EDIT MODAL ===== */
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 200;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
         }
-        .modal-overlay.visible { display: flex; }
+        
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
         .modal {
-            background: var(--card-bg);
-            border-radius: 16px;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            width: 440px;
+            max-width: 90vw;
             padding: 24px;
-            width: 90%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg);
+            z-index: 201;
         }
-        .modal h3 { margin-bottom: 20px; font-size: 18px; }
-        .modal .form-group { margin-bottom: 16px; }
-        .modal label {
+        
+        .modal h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
             display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: inherit;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
             font-size: 13px;
             font-weight: 500;
-            margin-bottom: 6px;
-            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: inherit;
         }
-        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
         
-        /* Responsive */
-        @media (max-width: 640px) {
-            .form-row { flex-direction: column; }
-            .stats { grid-template-columns: repeat(2, 1fr); }
-            .filters { flex-direction: column; }
-            .header h1 { font-size: 22px; }
+        .btn-secondary {
+            background: var(--bg-hover);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--bg-active);
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            border: none;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        /* ===== KEYBOARD SHORTCUTS HINT ===== */
+        .shortcuts-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 11px;
+            color: var(--text-tertiary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .shortcuts-hint kbd {
+            background: var(--bg-hover);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: -240px;
+                top: 0;
+                bottom: 0;
+                z-index: 50;
+                transition: left 0.2s ease;
+            }
+            
+            .sidebar.mobile-open {
+                left: 0;
+            }
+            
+            .main-header,
+            .main-content {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+            
+            .mobile-menu-btn {
+                display: flex;
+            }
+            
+            .shortcuts-hint {
+                display: none;
+            }
+        }
+        
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>✓ AI Todo App</h1>
-            <div class="header-actions">
-                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-            </div>
-        </header>
-        
-        <!-- AI Command Center -->
-        <div class="ai-panel">
-            <div class="ai-panel-header">
-                <div class="ai-panel-icon">🤖</div>
-                <div>
-                    <div class="ai-panel-title">AI Command Center</div>
-                    <div class="ai-panel-subtitle">Let AI handle the heavy lifting - describe tasks naturally or let it plan your day</div>
+    <div class="app">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="sidebar-logo-icon">✓</div>
+                    <span>Todo</span>
                 </div>
-            </div>
-            <input type="text" class="ai-command-input" id="aiCommandInput" 
-                placeholder='Try: "Plan a birthday party for next Saturday" or "I need to prepare for a job interview"'
-                onkeypress="if(event.key==='Enter') aiAutoCreate()">
-            <div class="ai-actions">
-                <button class="ai-action-btn primary" onclick="aiAutoCreate()" id="aiCreateBtn">
-                    ✨ Auto-Create Task
+                <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M2 4h12M2 8h12M2 12h12"/>
+                    </svg>
                 </button>
-                <button class="ai-action-btn secondary" onclick="aiBreakdown()" id="aiBreakdownBtn">
-                    📋 Break Into Subtasks
-                </button>
-                <button class="ai-action-btn secondary" onclick="aiDailyPlan()" id="aiPlanBtn">
-                    📅 Plan My Day
-                </button>
-                <button class="ai-action-btn secondary" onclick="aiSmartSuggestions()" id="aiSmartBtn">
-                    💡 Smart Suggestions
-                </button>
-            </div>
-            <div class="ai-results" id="aiResults">
-                <div class="ai-results-header">
-                    <span class="ai-results-title" id="aiResultsTitle">AI Results</span>
-                    <button class="ai-results-close" onclick="closeAIResults()">×</button>
-                </div>
-                <div class="ai-results-content" id="aiResultsContent"></div>
-            </div>
-        </div>
-        
-        <!-- Stats -->
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-value" id="totalCount">0</div>
-                <div class="stat-label">Total</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="pendingCount">0</div>
-                <div class="stat-label">Pending</div>
-            </div>
-            <div class="stat-card completed">
-                <div class="stat-value" id="completedCount">0</div>
-                <div class="stat-label">Completed</div>
-            </div>
-            <div class="stat-card overdue">
-                <div class="stat-value" id="overdueCount">0</div>
-                <div class="stat-label">Overdue</div>
-            </div>
-        </div>
-        
-        <!-- Add Todo Form -->
-        <div class="add-form">
-            <div class="form-row">
-                <input type="text" id="titleInput" placeholder="What needs to be done?" onkeypress="if(event.key==='Enter')addTodo()">
-            </div>
-            <div class="form-row">
-                <textarea id="descInput" placeholder="Add description (optional)" rows="2"></textarea>
-            </div>
-            <div class="form-row">
-                <select id="prioritySelect">
-                    <option value="low">Low Priority</option>
-                    <option value="medium" selected>Medium Priority</option>
-                    <option value="high">High Priority</option>
-                </select>
-                <select id="categorySelect">
-                    <option value="">No Category</option>
-                    <option value="Work">Work</option>
-                    <option value="Personal">Personal</option>
-                    <option value="Shopping">Shopping</option>
-                    <option value="Health">Health</option>
-                    <option value="Finance">Finance</option>
-                    <option value="Learning">Learning</option>
-                </select>
-                <input type="date" id="dueDateInput" title="Due date">
-            </div>
-            <div class="form-row">
-                <input type="text" id="tagsInput" placeholder="Tags (comma separated)">
-            </div>
-            <div class="form-row" style="justify-content: flex-end;">
-                <button class="btn btn-ai" onclick="getAISuggestion()" id="aiBtn">💡 Quick Suggest</button>
-                <button class="btn btn-primary" onclick="addTodo()">➕ Add Todo</button>
-            </div>
-            <div class="ai-box" id="aiBox">
-                <div class="ai-box-header">
-                    <span class="ai-box-title">✨ AI Suggestion</span>
-                    <button class="ai-box-close" onclick="closeAI()">×</button>
-                </div>
-                <div class="ai-box-content" id="aiContent"></div>
-            </div>
-        </div>
-        
-        <!-- Filters -->
-        <div class="filters">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="Search todos..." oninput="renderTodos()">
-            </div>
-            <button class="filter-btn active" onclick="setFilter('all')" data-filter="all">All</button>
-            <button class="filter-btn" onclick="setFilter('pending')" data-filter="pending">Pending</button>
-            <button class="filter-btn" onclick="setFilter('completed')" data-filter="completed">Completed</button>
-            <select id="sortSelect" onchange="renderTodos()" style="padding: 10px 12px;">
-                <option value="created">Sort: Created</option>
-                <option value="due">Sort: Due Date</option>
-                <option value="priority">Sort: Priority</option>
-            </select>
-        </div>
-        
-        <!-- Todo Sections -->
-        <div class="todo-sections">
-            <div id="overdueSectionWrap" style="display:none;">
-                <div class="section-header">
-                    <span class="section-title" style="color: var(--danger);">Overdue</span>
-                    <span class="section-count" id="overdueListCount">0</span>
-                </div>
-                <div class="todo-list" id="overdueList"></div>
             </div>
             
-            <div id="todaySectionWrap" style="display:none;">
-                <div class="section-header">
-                    <span class="section-title">Due Today</span>
-                    <span class="section-count" id="todayListCount">0</span>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-item active" onclick="setView('inbox')">
+                        <span class="nav-item-icon">📥</span>
+                        <span>Inbox</span>
+                        <span class="nav-item-count" id="inboxCount">0</span>
+                    </div>
+                    <div class="nav-item" onclick="setView('today')">
+                        <span class="nav-item-icon">📅</span>
+                        <span>Today</span>
+                        <span class="nav-item-count" id="todayCount">0</span>
+                    </div>
+                    <div class="nav-item" onclick="setView('upcoming')">
+                        <span class="nav-item-icon">📆</span>
+                        <span>Upcoming</span>
+                    </div>
                 </div>
-                <div class="todo-list" id="todayList"></div>
-            </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Categories</div>
+                    <div class="nav-item" onclick="setView('work')">
+                        <span class="nav-item-icon">💼</span>
+                        <span>Work</span>
+                    </div>
+                    <div class="nav-item" onclick="setView('personal')">
+                        <span class="nav-item-icon">🏠</span>
+                        <span>Personal</span>
+                    </div>
+                    <div class="nav-item" onclick="setView('health')">
+                        <span class="nav-item-icon">💪</span>
+                        <span>Health</span>
+                    </div>
+                    <div class="nav-item" onclick="setView('learning')">
+                        <span class="nav-item-icon">📚</span>
+                        <span>Learning</span>
+                    </div>
+                </div>
+            </nav>
             
-            <div>
-                <div class="section-header">
-                    <span class="section-title">All Todos</span>
-                    <span class="section-count" id="mainListCount">0</span>
+            <div class="sidebar-footer">
+                <div class="user-menu">
+                    <div class="user-avatar">A</div>
+                    <div class="user-info">
+                        <div class="user-name">My Tasks</div>
+                    </div>
+                    <button class="theme-btn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
                 </div>
-                <div class="todo-list" id="todoList">
-                    <div class="loading">
-                        <div class="spinner"></div>
-                        Loading todos...
+            </div>
+        </aside>
+        
+        <!-- MAIN CONTENT -->
+        <main class="main">
+            <header class="main-header">
+                <button class="mobile-menu-btn" onclick="toggleMobileSidebar()">☰</button>
+                <h1 class="page-title" id="pageTitle">Inbox</h1>
+                <p class="page-subtitle" id="pageSubtitle">All your tasks in one place</p>
+            </header>
+            
+            <div class="main-content">
+                <div class="content-container">
+                    <!-- UNIVERSAL INPUT -->
+                    <div class="universal-input-container">
+                        <div class="universal-input">
+                            <input type="text" id="taskInput" placeholder="Add a task..." 
+                                onkeydown="handleInputKeydown(event)">
+                            <div class="input-actions">
+                                <button class="input-btn ai-sparkle-btn" onclick="openAIPopover()" title="AI Actions (⌘K)">
+                                    ✨
+                                </button>
+                                <button class="input-btn add-btn" onclick="addTask()">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- TASK SECTIONS -->
+                    <div id="taskSections">
+                        <!-- Overdue Section -->
+                        <div class="task-section" id="overdueSection" style="display: none;">
+                            <div class="task-section-header">
+                                <span class="task-section-title" style="color: var(--danger);">Overdue</span>
+                                <span class="task-section-count" id="overdueCount">0</span>
+                            </div>
+                            <div class="task-list" id="overdueList"></div>
+                        </div>
+                        
+                        <!-- Today Section -->
+                        <div class="task-section" id="todaySection" style="display: none;">
+                            <div class="task-section-header">
+                                <span class="task-section-title">Due Today</span>
+                                <span class="task-section-count" id="todayListCount">0</span>
+                            </div>
+                            <div class="task-list" id="todayList"></div>
+                        </div>
+                        
+                        <!-- Main Task List -->
+                        <div class="task-section">
+                            <div class="task-section-header">
+                                <span class="task-section-title">Tasks</span>
+                                <span class="task-section-count" id="mainCount">0</span>
+                            </div>
+                            <div class="task-list" id="taskList">
+                                <div class="empty-state">
+                                    <div class="empty-state-icon">✓</div>
+                                    <div class="empty-state-text">No tasks yet. Add one above!</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+        </main>
+    </div>
+    
+    <!-- AI POPOVER -->
+    <div class="ai-popover-overlay" id="aiOverlay" onclick="closeAIPopover()"></div>
+    <div class="ai-popover" id="aiPopover">
+        <div class="ai-popover-header">
+            <div class="ai-popover-title">
+                <span>✨</span> AI Assistant
+            </div>
+            <button class="ai-popover-close" onclick="closeAIPopover()">×</button>
+        </div>
+        <div class="ai-popover-content">
+            <div class="ai-option" onclick="aiAutoCreate()">
+                <div class="ai-option-icon">🚀</div>
+                <div class="ai-option-text">
+                    <h4>Auto-create task</h4>
+                    <p>Parse natural language into a structured task</p>
+                </div>
+                <span class="ai-option-kbd">⏎</span>
+            </div>
+            <div class="ai-option" onclick="aiBreakdown()">
+                <div class="ai-option-icon">📋</div>
+                <div class="ai-option-text">
+                    <h4>Break into subtasks</h4>
+                    <p>Split complex task into actionable steps</p>
+                </div>
+                <span class="ai-option-kbd">⌘B</span>
+            </div>
+            <div class="ai-option" onclick="aiPlanDay()">
+                <div class="ai-option-icon">📅</div>
+                <div class="ai-option-text">
+                    <h4>Plan my day</h4>
+                    <p>Create an optimized daily schedule</p>
+                </div>
+                <span class="ai-option-kbd">⌘P</span>
+            </div>
+            <div class="ai-option" onclick="aiSuggest()">
+                <div class="ai-option-icon">💡</div>
+                <div class="ai-option-text">
+                    <h4>Get suggestions</h4>
+                    <p>Smart tips based on your current task</p>
+                </div>
+                <span class="ai-option-kbd">⌘S</span>
+            </div>
+        </div>
+        <div class="ai-results-panel" id="aiResultsPanel">
+            <div class="ai-results-title" id="aiResultsTitle">Results</div>
+            <div id="aiResultsContent"></div>
         </div>
     </div>
     
-    <!-- Edit Modal -->
-    <div class="modal-overlay" id="editModal">
-        <div class="modal">
-            <h3>Edit Todo</h3>
+    <!-- EDIT MODAL -->
+    <div class="modal-overlay" id="editModal" onclick="closeEditModal()">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h3>Edit Task</h3>
             <input type="hidden" id="editId">
             <div class="form-group">
                 <label>Title</label>
@@ -746,13 +1174,19 @@
                 <label>Description</label>
                 <textarea id="editDesc" rows="3"></textarea>
             </div>
-            <div class="form-group">
-                <label>Priority</label>
-                <select id="editPriority">
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="editPriority">
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Due Date</label>
+                    <input type="date" id="editDueDate">
+                </div>
             </div>
             <div class="form-group">
                 <label>Category</label>
@@ -760,190 +1194,213 @@
                     <option value="">None</option>
                     <option value="Work">Work</option>
                     <option value="Personal">Personal</option>
-                    <option value="Shopping">Shopping</option>
                     <option value="Health">Health</option>
-                    <option value="Finance">Finance</option>
                     <option value="Learning">Learning</option>
+                    <option value="Shopping">Shopping</option>
+                    <option value="Finance">Finance</option>
                 </select>
-            </div>
-            <div class="form-group">
-                <label>Due Date</label>
-                <input type="date" id="editDueDate">
-            </div>
-            <div class="form-group">
-                <label>Tags</label>
-                <input type="text" id="editTags" placeholder="comma separated">
             </div>
             <div class="modal-actions">
                 <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="saveEdit()">Save</button>
+                <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
             </div>
         </div>
+    </div>
+    
+    <!-- KEYBOARD SHORTCUTS HINT -->
+    <div class="shortcuts-hint">
+        <kbd>⌘K</kbd> AI · <kbd>⌘N</kbd> New task
     </div>
 
     <script>
         const API_URL = 'https://14m2okq3b6.execute-api.us-east-2.amazonaws.com';
         let todos = [];
-        let currentFilter = 'all';
+        let currentView = 'inbox';
         
-        // Theme
+        // ===== THEME =====
         function toggleTheme() {
             document.body.classList.toggle('dark');
             const isDark = document.body.classList.contains('dark');
             localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            document.querySelector('.theme-toggle').textContent = isDark ? '☀️' : '🌙';
-        }
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark');
-            document.querySelector('.theme-toggle').textContent = '☀️';
+            document.querySelector('.theme-btn').textContent = isDark ? '☀️' : '🌙';
         }
         
-        // Fetch todos
-        async function fetchTodos() {
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark');
+            document.querySelector('.theme-btn').textContent = '☀️';
+        }
+        
+        // ===== SIDEBAR =====
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('collapsed');
+        }
+        
+        function toggleMobileSidebar() {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+        }
+        
+        // ===== VIEWS =====
+        function setView(view) {
+            currentView = view;
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            
+            const titles = {
+                inbox: ['Inbox', 'All your tasks in one place'],
+                today: ['Today', 'Tasks due today'],
+                upcoming: ['Upcoming', 'Scheduled tasks'],
+                work: ['Work', 'Work-related tasks'],
+                personal: ['Personal', 'Personal tasks'],
+                health: ['Health', 'Health & fitness tasks'],
+                learning: ['Learning', 'Learning & education tasks']
+            };
+            
+            document.getElementById('pageTitle').textContent = titles[view][0];
+            document.getElementById('pageSubtitle').textContent = titles[view][1];
+            renderTasks();
+        }
+        
+        // ===== FETCH TASKS =====
+        async function fetchTasks() {
             try {
                 const res = await fetch(`${API_URL}/todos`);
                 const data = await res.json();
                 todos = data.data?.todos || [];
-                updateStats();
-                renderTodos();
+                updateCounts();
+                renderTasks();
             } catch (err) {
-                console.error('Error fetching todos:', err);
-                document.getElementById('todoList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">!</div><div class="empty-state-text">Error loading todos</div></div>';
+                console.error('Error fetching tasks:', err);
             }
         }
         
-        // Update stats
-        function updateStats() {
+        // ===== UPDATE COUNTS =====
+        function updateCounts() {
             const today = new Date().toISOString().split('T')[0];
             const pending = todos.filter(t => t.status !== 'completed');
-            const completed = todos.filter(t => t.status === 'completed');
-            const overdue = pending.filter(t => t.dueDate && t.dueDate < today);
+            const dueToday = pending.filter(t => t.dueDate === today);
             
-            document.getElementById('totalCount').textContent = todos.length;
-            document.getElementById('pendingCount').textContent = pending.length;
-            document.getElementById('completedCount').textContent = completed.length;
-            document.getElementById('overdueCount').textContent = overdue.length;
+            document.getElementById('inboxCount').textContent = pending.length;
+            document.getElementById('todayCount').textContent = dueToday.length;
         }
         
-        // Render todos
-        function renderTodos() {
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            const sort = document.getElementById('sortSelect').value;
+        // ===== RENDER TASKS =====
+        function renderTasks() {
             const today = new Date().toISOString().split('T')[0];
+            let filtered = todos;
             
-            let filtered = todos.filter(t => {
-                if (currentFilter === 'pending' && t.status === 'completed') return false;
-                if (currentFilter === 'completed' && t.status !== 'completed') return false;
-                if (search && !t.title.toLowerCase().includes(search) && !(t.description || '').toLowerCase().includes(search)) return false;
-                return true;
-            });
+            // Filter by view
+            if (currentView === 'today') {
+                filtered = todos.filter(t => t.dueDate === today || (t.dueDate && t.dueDate < today && t.status !== 'completed'));
+            } else if (currentView === 'upcoming') {
+                filtered = todos.filter(t => t.dueDate && t.dueDate > today);
+            } else if (['work', 'personal', 'health', 'learning'].includes(currentView)) {
+                const categoryMap = { work: 'Work', personal: 'Personal', health: 'Health', learning: 'Learning' };
+                filtered = todos.filter(t => t.category === categoryMap[currentView]);
+            }
             
-            // Sort
-            const priorityOrder = { high: 0, medium: 1, low: 2 };
-            filtered.sort((a, b) => {
-                if (sort === 'due') {
-                    if (!a.dueDate && !b.dueDate) return 0;
-                    if (!a.dueDate) return 1;
-                    if (!b.dueDate) return -1;
-                    return a.dueDate.localeCompare(b.dueDate);
-                }
-                if (sort === 'priority') return priorityOrder[a.priority] - priorityOrder[b.priority];
-                return new Date(b.createdAt) - new Date(a.createdAt);
-            });
-            
-            // Separate overdue and today
+            // Separate by status
             const overdue = filtered.filter(t => t.status !== 'completed' && t.dueDate && t.dueDate < today);
             const dueToday = filtered.filter(t => t.status !== 'completed' && t.dueDate === today);
             const rest = filtered.filter(t => !overdue.includes(t) && !dueToday.includes(t));
             
-            // Render sections
-            const overdueWrap = document.getElementById('overdueSectionWrap');
-            const todayWrap = document.getElementById('todaySectionWrap');
+            // Sort rest: pending first, then by priority
+            const priorityOrder = { high: 0, medium: 1, low: 2 };
+            rest.sort((a, b) => {
+                if (a.status === 'completed' && b.status !== 'completed') return 1;
+                if (a.status !== 'completed' && b.status === 'completed') return -1;
+                return priorityOrder[a.priority] - priorityOrder[b.priority];
+            });
             
+            // Render overdue
+            const overdueSection = document.getElementById('overdueSection');
             if (overdue.length > 0) {
-                overdueWrap.style.display = 'block';
-                document.getElementById('overdueList').innerHTML = overdue.map(renderTodoItem).join('');
-                document.getElementById('overdueListCount').textContent = overdue.length;
+                overdueSection.style.display = 'block';
+                document.getElementById('overdueCount').textContent = overdue.length;
+                document.getElementById('overdueList').innerHTML = overdue.map(renderTaskRow).join('');
             } else {
-                overdueWrap.style.display = 'none';
+                overdueSection.style.display = 'none';
             }
             
+            // Render today
+            const todaySection = document.getElementById('todaySection');
             if (dueToday.length > 0) {
-                todayWrap.style.display = 'block';
-                document.getElementById('todayList').innerHTML = dueToday.map(renderTodoItem).join('');
+                todaySection.style.display = 'block';
                 document.getElementById('todayListCount').textContent = dueToday.length;
+                document.getElementById('todayList').innerHTML = dueToday.map(renderTaskRow).join('');
             } else {
-                todayWrap.style.display = 'none';
+                todaySection.style.display = 'none';
             }
             
-            // Main list
-            document.getElementById('mainListCount').textContent = rest.length;
+            // Render main list
+            document.getElementById('mainCount').textContent = rest.length;
             if (rest.length === 0) {
-                document.getElementById('todoList').innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-text">No todos found</div></div>';
+                document.getElementById('taskList').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">✓</div>
+                        <div class="empty-state-text">No tasks. Add one above!</div>
+                    </div>
+                `;
             } else {
-                document.getElementById('todoList').innerHTML = rest.map(renderTodoItem).join('');
+                document.getElementById('taskList').innerHTML = rest.map(renderTaskRow).join('');
             }
         }
         
-        function renderTodoItem(todo) {
+        // ===== RENDER TASK ROW =====
+        function renderTaskRow(task) {
             const today = new Date().toISOString().split('T')[0];
-            const isOverdue = todo.dueDate && todo.dueDate < today && todo.status !== 'completed';
+            const isOverdue = task.dueDate && task.dueDate < today && task.status !== 'completed';
+            const isToday = task.dueDate === today;
+            
             return `
-                <div class="todo-item ${todo.status === 'completed' ? 'completed' : ''}" data-id="${todo.todoId}">
-                    <div class="todo-checkbox ${todo.status === 'completed' ? 'completed' : ''}" onclick="toggleTodo('${todo.todoId}', '${todo.status}')"></div>
-                    <div class="todo-content">
-                        <div class="todo-header">
-                            <span class="todo-title">${esc(todo.title)}</span>
-                        </div>
-                        ${todo.description ? `<div class="todo-description">${esc(todo.description)}</div>` : ''}
-                        <div class="todo-meta">
-                            <span class="badge badge-priority-${todo.priority}">${todo.priority}</span>
-                            ${todo.category ? `<span class="badge badge-category">${esc(todo.category)}</span>` : ''}
-                            ${todo.dueDate ? `<span class="badge badge-due ${isOverdue ? 'overdue' : ''}">${formatDate(todo.dueDate)}</span>` : ''}
-                            ${(todo.tags || []).map(t => `<span class="badge badge-tag">${esc(t)}</span>`).join('')}
-                        </div>
+                <div class="task-row ${task.status === 'completed' ? 'completed' : ''}" data-id="${task.todoId}">
+                    <div class="task-checkbox" onclick="toggleTask('${task.todoId}', '${task.status}')"></div>
+                    <div class="task-content">
+                        <div class="task-title">${esc(task.title)}</div>
+                        ${task.category ? `<div class="task-meta"><span class="task-meta-item">${task.category}</span></div>` : ''}
                     </div>
-                    <div class="todo-actions">
-                        <button class="action-btn" onclick="openEditModal('${todo.todoId}')" title="Edit">Edit</button>
-                        <button class="action-btn delete" onclick="deleteTodo('${todo.todoId}')" title="Delete">X</button>
+                    <div class="task-right">
+                        ${task.dueDate ? `<span class="task-due ${isOverdue ? 'overdue' : ''} ${isToday ? 'today' : ''}">${formatDate(task.dueDate)}</span>` : ''}
+                        <div class="priority-dot ${task.priority}"></div>
+                        <div class="task-actions">
+                            <button class="task-action-btn" onclick="openEditModal('${task.todoId}')" title="Edit">✏️</button>
+                            <button class="task-action-btn" onclick="aiBreakdownTask('${task.todoId}')" title="AI Breakdown">✨</button>
+                            <button class="task-action-btn delete" onclick="deleteTask('${task.todoId}')" title="Delete">🗑</button>
+                        </div>
                     </div>
                 </div>
             `;
         }
         
-        // Add todo
-        async function addTodo() {
-            const title = document.getElementById('titleInput').value.trim();
-            if (!title) return;
-            
-            const data = {
-                title,
-                description: document.getElementById('descInput').value.trim() || undefined,
-                priority: document.getElementById('prioritySelect').value,
-                category: document.getElementById('categorySelect').value || undefined,
-                dueDate: document.getElementById('dueDateInput').value || undefined,
-                tags: document.getElementById('tagsInput').value.split(',').map(t => t.trim()).filter(Boolean)
-            };
-            
-            try {
-                const res = await fetch(`${API_URL}/todos`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if (res.ok) {
-                    document.getElementById('titleInput').value = '';
-                    document.getElementById('descInput').value = '';
-                    document.getElementById('dueDateInput').value = '';
-                    document.getElementById('tagsInput').value = '';
-                    document.getElementById('categorySelect').value = '';
-                    fetchTodos();
-                }
-            } catch (err) { console.error('Error adding todo:', err); }
+        // ===== ADD TASK =====
+        function handleInputKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                addTask();
+            } else if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                openAIPopover();
+            }
         }
         
-        // Toggle todo
-        async function toggleTodo(id, status) {
+        async function addTask() {
+            const input = document.getElementById('taskInput');
+            const title = input.value.trim();
+            if (!title) return;
+            
+            try {
+                await fetch(`${API_URL}/todos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, priority: 'medium' })
+                });
+                input.value = '';
+                fetchTasks();
+            } catch (err) {
+                console.error('Error adding task:', err);
+            }
+        }
+        
+        // ===== TOGGLE TASK =====
+        async function toggleTask(id, status) {
             const newStatus = status === 'completed' ? 'pending' : 'completed';
             try {
                 await fetch(`${API_URL}/todos/${id}`, {
@@ -951,30 +1408,34 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: newStatus })
                 });
-                fetchTodos();
-            } catch (err) { console.error('Error toggling todo:', err); }
+                fetchTasks();
+            } catch (err) {
+                console.error('Error toggling task:', err);
+            }
         }
         
-        // Delete todo
-        async function deleteTodo(id) {
-            if (!confirm('Delete this todo?')) return;
+        // ===== DELETE TASK =====
+        async function deleteTask(id) {
+            if (!confirm('Delete this task?')) return;
             try {
                 await fetch(`${API_URL}/todos/${id}`, { method: 'DELETE' });
-                fetchTodos();
-            } catch (err) { console.error('Error deleting todo:', err); }
+                fetchTasks();
+            } catch (err) {
+                console.error('Error deleting task:', err);
+            }
         }
         
-        // Edit modal
+        // ===== EDIT MODAL =====
         function openEditModal(id) {
-            const todo = todos.find(t => t.todoId === id);
-            if (!todo) return;
+            const task = todos.find(t => t.todoId === id);
+            if (!task) return;
+            
             document.getElementById('editId').value = id;
-            document.getElementById('editTitle').value = todo.title;
-            document.getElementById('editDesc').value = todo.description || '';
-            document.getElementById('editPriority').value = todo.priority;
-            document.getElementById('editCategory').value = todo.category || '';
-            document.getElementById('editDueDate').value = todo.dueDate || '';
-            document.getElementById('editTags').value = (todo.tags || []).join(', ');
+            document.getElementById('editTitle').value = task.title;
+            document.getElementById('editDesc').value = task.description || '';
+            document.getElementById('editPriority').value = task.priority;
+            document.getElementById('editCategory').value = task.category || '';
+            document.getElementById('editDueDate').value = task.dueDate || '';
             document.getElementById('editModal').classList.add('visible');
         }
         
@@ -989,9 +1450,9 @@
                 description: document.getElementById('editDesc').value.trim() || undefined,
                 priority: document.getElementById('editPriority').value,
                 category: document.getElementById('editCategory').value || undefined,
-                dueDate: document.getElementById('editDueDate').value || undefined,
-                tags: document.getElementById('editTags').value.split(',').map(t => t.trim()).filter(Boolean)
+                dueDate: document.getElementById('editDueDate').value || undefined
             };
+            
             try {
                 await fetch(`${API_URL}/todos/${id}`, {
                     method: 'PUT',
@@ -999,65 +1460,51 @@
                     body: JSON.stringify(data)
                 });
                 closeEditModal();
-                fetchTodos();
-            } catch (err) { console.error('Error saving todo:', err); }
-        }
-        
-        // Filter
-        function setFilter(f) {
-            currentFilter = f;
-            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.filter === f));
-            renderTodos();
-        }
-        
-        // AI suggestion
-        async function getAISuggestion() {
-            const task = document.getElementById('titleInput').value.trim();
-            if (!task) { alert('Enter a task first'); return; }
-            
-            const btn = document.getElementById('aiBtn');
-            btn.disabled = true;
-            btn.textContent = '🤔 Thinking...';
-            
-            try {
-                const res = await fetch(`${API_URL}/todos/ai/suggest`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ task, mode: 'suggest' })
-                });
-                const data = await res.json();
-                document.getElementById('aiContent').textContent = data.success ? data.data : 'Error: ' + (data.error || 'Failed');
-                document.getElementById('aiBox').classList.add('visible');
+                fetchTasks();
             } catch (err) {
-                document.getElementById('aiContent').textContent = 'Failed to get AI suggestion';
-                document.getElementById('aiBox').classList.add('visible');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = '💡 Quick Suggest';
+                console.error('Error saving task:', err);
             }
         }
         
-        function closeAI() { document.getElementById('aiBox').classList.remove('visible'); }
-        function closeAIResults() { document.getElementById('aiResults').classList.remove('visible'); }
+        // ===== AI POPOVER =====
+        function openAIPopover() {
+            document.getElementById('aiOverlay').classList.add('visible');
+            document.getElementById('aiPopover').classList.add('visible');
+            document.getElementById('aiResultsPanel').classList.remove('visible');
+        }
         
-        // Show AI results
+        function closeAIPopover() {
+            document.getElementById('aiOverlay').classList.remove('visible');
+            document.getElementById('aiPopover').classList.remove('visible');
+        }
+        
         function showAIResults(title, content) {
             document.getElementById('aiResultsTitle').textContent = title;
             document.getElementById('aiResultsContent').innerHTML = content;
-            document.getElementById('aiResults').classList.add('visible');
+            document.getElementById('aiResultsPanel').classList.add('visible');
         }
         
-        // AI Auto-Create: Parse natural language and create todo automatically
+        function showAILoading(message = 'Thinking...') {
+            document.getElementById('aiResultsTitle').textContent = 'AI';
+            document.getElementById('aiResultsContent').innerHTML = `
+                <div class="ai-loading">
+                    <span class="ai-loading-spinner"></span>${message}
+                </div>
+            `;
+            document.getElementById('aiResultsPanel').classList.add('visible');
+        }
+        
+        // ===== AI ACTIONS =====
         async function aiAutoCreate() {
-            const input = document.getElementById('aiCommandInput').value.trim();
-            if (!input) { alert('Enter a task description first'); return; }
+            const input = document.getElementById('taskInput').value.trim();
+            if (!input) {
+                alert('Enter a task description first');
+                return;
+            }
             
-            const btn = document.getElementById('aiCreateBtn');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Creating...';
+            showAILoading('Creating task...');
             
             try {
-                // Use AI to parse the natural language input
                 const res = await fetch(`${API_URL}/todos/ai/suggest`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1066,395 +1513,272 @@
                 const data = await res.json();
                 
                 if (data.success && data.data) {
-                    const parsed = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+                    const parsed = typeof data.data === 'string' ? tryParseJSON(data.data) : data.data;
                     
-                    // Detect priority from keywords
+                    // Detect priority and due date
                     let priority = 'medium';
                     const inputLower = input.toLowerCase();
-                    if (inputLower.match(/urgent|asap|important|critical|today|now/)) priority = 'high';
-                    else if (inputLower.match(/later|someday|eventually|when possible/)) priority = 'low';
+                    if (inputLower.match(/urgent|asap|important|critical/)) priority = 'high';
+                    else if (inputLower.match(/later|someday|eventually/)) priority = 'low';
                     
-                    // Detect due date from natural language
-                    let dueDate = '';
-                    const today = new Date();
-                    if (inputLower.includes('today')) {
-                        dueDate = today.toISOString().split('T')[0];
-                    } else if (inputLower.includes('tomorrow')) {
-                        today.setDate(today.getDate() + 1);
-                        dueDate = today.toISOString().split('T')[0];
-                    } else if (inputLower.includes('next week')) {
-                        today.setDate(today.getDate() + 7);
-                        dueDate = today.toISOString().split('T')[0];
-                    } else if (inputLower.match(/next (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/)) {
-                        const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-                        const match = inputLower.match(/next (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/);
-                        const targetDay = days.indexOf(match[1]);
-                        const currentDay = today.getDay();
-                        let daysUntil = targetDay - currentDay;
-                        if (daysUntil <= 0) daysUntil += 7;
-                        today.setDate(today.getDate() + daysUntil);
-                        dueDate = today.toISOString().split('T')[0];
-                    }
+                    let dueDate = detectDueDate(inputLower);
                     
-                    // Create the todo
                     const todoData = {
                         title: parsed.title || input.substring(0, 100),
                         description: parsed.description || '',
-                        category: parsed.category || 'General',
+                        category: parsed.category || '',
                         priority: priority,
-                        dueDate: dueDate || undefined,
-                        tags: parsed.tags || []
+                        dueDate: dueDate || undefined
                     };
                     
-                    const createRes = await fetch(`${API_URL}/todos`, {
+                    await fetch(`${API_URL}/todos`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(todoData)
                     });
                     
-                    if (createRes.ok) {
-                        document.getElementById('aiCommandInput').value = '';
-                        showAIResults('✅ Task Created!', `
-<div style="text-align: center; padding: 20px;">
-    <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
-    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${esc(todoData.title)}</div>
-    <div style="color: rgba(255,255,255,0.7); margin-bottom: 16px;">${todoData.description ? esc(todoData.description) : 'No description'}</div>
-    <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
-        <span style="background: rgba(99,102,241,0.3); padding: 4px 12px; border-radius: 20px; font-size: 12px;">📁 ${todoData.category}</span>
-        <span style="background: rgba(${priority === 'high' ? '239,68,68' : priority === 'medium' ? '245,158,11' : '34,197,94'},0.3); padding: 4px 12px; border-radius: 20px; font-size: 12px;">⚡ ${priority}</span>
-        ${dueDate ? `<span style="background: rgba(139,92,246,0.3); padding: 4px 12px; border-radius: 20px; font-size: 12px;">📅 ${formatDate(dueDate)}</span>` : ''}
-    </div>
-</div>`);
-                        fetchTodos();
-                    }
+                    document.getElementById('taskInput').value = '';
+                    closeAIPopover();
+                    fetchTasks();
                 }
             } catch (err) {
                 console.error('AI auto-create error:', err);
-                showAIResults('❌ Error', 'Failed to create task. Please try again.');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '✨ Auto-Create Task';
+                showAIResults('Error', '<div class="ai-loading">Failed to create task</div>');
             }
         }
         
-        // AI Task Breakdown: Break a complex task into subtasks
         async function aiBreakdown() {
-            const input = document.getElementById('aiCommandInput').value.trim();
-            if (!input) { alert('Enter a task to break down'); return; }
+            const input = document.getElementById('taskInput').value.trim();
+            if (!input) {
+                alert('Enter a task to break down');
+                return;
+            }
             
-            const btn = document.getElementById('aiBreakdownBtn');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Analyzing...';
+            await performAIBreakdown(input);
+        }
+        
+        async function aiBreakdownTask(taskId) {
+            const task = todos.find(t => t.todoId === taskId);
+            if (!task) return;
+            
+            openAIPopover();
+            await performAIBreakdown(task.title);
+        }
+        
+        async function performAIBreakdown(taskText) {
+            showAILoading('Breaking down task...');
             
             try {
                 const res = await fetch(`${API_URL}/todos/ai/suggest`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        task: `Break down this task into 4-6 specific actionable subtasks with time estimates. Task: "${input}". Return as JSON array: [{"title":"...","timeEstimate":"...","priority":"high/medium/low"}]`,
+                        task: `Break down this task into 4-6 specific actionable subtasks with time estimates. Task: "${taskText}". Return as JSON array: [{"title":"...","timeEstimate":"...","priority":"high/medium/low"}]`,
                         mode: 'suggest' 
                     })
                 });
                 const data = await res.json();
                 
-                // Parse subtasks from AI response
-                let subtasks = [];
-                if (data.success && data.data) {
-                    const jsonMatch = data.data.match(/\[.*\]/s);
-                    if (jsonMatch) {
-                        try {
-                            subtasks = JSON.parse(jsonMatch[0]);
-                        } catch (e) {
-                            // Fallback parsing for non-JSON responses
-                            subtasks = parseSubtasksFromText(data.data, input);
-                        }
-                    } else {
-                        subtasks = parseSubtasksFromText(data.data, input);
-                    }
-                }
+                let subtasks = parseSubtasks(data.data, taskText);
                 
-                // If no subtasks parsed, generate smart defaults
-                if (subtasks.length === 0) {
-                    subtasks = generateSmartSubtasks(input);
-                }
-                
-                const subtasksHtml = subtasks.map((st, i) => `
-                    <div class="ai-subtask">
-                        <div class="ai-subtask-info">
-                            <div class="ai-subtask-title">${i + 1}. ${esc(st.title)}</div>
-                            <div class="ai-subtask-meta">
-                                ⏱️ ${st.timeEstimate || '~30 min'} • 
-                                <span style="color: ${st.priority === 'high' ? '#f87171' : st.priority === 'low' ? '#34d399' : '#fbbf24'}">
-                                    ${st.priority || 'medium'} priority
-                                </span>
-                            </div>
+                const html = subtasks.map(st => `
+                    <div class="ai-result-item">
+                        <div>
+                            <div class="ai-result-text">${esc(st.title)}</div>
+                            <div class="ai-result-meta">${st.timeEstimate || '~30 min'} · ${st.priority || 'medium'}</div>
                         </div>
-                        <button class="ai-subtask-add" onclick="addSubtask('${esc(st.title.replace(/'/g, "\\'"))}', '${st.priority || 'medium'}')">+ Add</button>
+                        <button class="ai-result-add" onclick="addSubtask('${esc(st.title.replace(/'/g, "\\'"))}', '${st.priority || 'medium'}')">Add</button>
                     </div>
                 `).join('');
                 
-                showAIResults(`📋 Task Breakdown: ${subtasks.length} Subtasks`, `
-                    <div style="margin-bottom: 12px; color: rgba(255,255,255,0.7); font-size: 13px;">
-                        Breaking down: "<strong>${esc(input)}</strong>"
-                    </div>
-                    ${subtasksHtml}
-                    <button class="ai-action-btn primary" style="width: 100%; margin-top: 12px; justify-content: center;" onclick="addAllSubtasks()">
-                        ➕ Add All Subtasks
+                showAIResults('Subtasks', html + `
+                    <button class="btn btn-primary" style="width: 100%; margin-top: 12px;" onclick="addAllSubtasks(${JSON.stringify(subtasks).replace(/"/g, '&quot;')})">
+                        Add All
                     </button>
                 `);
                 
-                // Store subtasks for "Add All"
-                window.pendingSubtasks = subtasks;
-                
             } catch (err) {
                 console.error('AI breakdown error:', err);
-                showAIResults('❌ Error', 'Failed to break down task. Please try again.');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '📋 Break Into Subtasks';
+                showAIResults('Error', '<div class="ai-loading">Failed to break down task</div>');
             }
         }
         
-        // Parse subtasks from text response
-        function parseSubtasksFromText(text, originalTask) {
-            const lines = text.split('\n').filter(l => l.trim());
-            const subtasks = [];
-            for (const line of lines) {
-                const match = line.match(/^[\d\-\*\.]+\s*(.+)/); 
-                if (match && match[1].length > 5) {
-                    subtasks.push({
-                        title: match[1].trim().substring(0, 100),
-                        timeEstimate: '~30 min',
-                        priority: 'medium'
-                    });
-                }
-            }
-            return subtasks.slice(0, 6);
-        }
-        
-        // Generate smart subtasks based on task type
-        function generateSmartSubtasks(task) {
-            const taskLower = task.toLowerCase();
+        async function aiPlanDay() {
+            showAILoading('Planning your day...');
             
-            if (taskLower.includes('party') || taskLower.includes('event')) {
-                return [
-                    { title: 'Create guest list', timeEstimate: '20 min', priority: 'high' },
-                    { title: 'Send invitations', timeEstimate: '30 min', priority: 'high' },
-                    { title: 'Plan menu and order food', timeEstimate: '1 hour', priority: 'medium' },
-                    { title: 'Arrange decorations', timeEstimate: '45 min', priority: 'medium' },
-                    { title: 'Prepare playlist/entertainment', timeEstimate: '30 min', priority: 'low' }
-                ];
-            }
-            if (taskLower.includes('interview') || taskLower.includes('job')) {
-                return [
-                    { title: 'Research the company', timeEstimate: '1 hour', priority: 'high' },
-                    { title: 'Review common interview questions', timeEstimate: '45 min', priority: 'high' },
-                    { title: 'Prepare STAR method examples', timeEstimate: '1 hour', priority: 'high' },
-                    { title: 'Plan and prepare outfit', timeEstimate: '20 min', priority: 'medium' },
-                    { title: 'Prepare questions to ask', timeEstimate: '30 min', priority: 'medium' }
-                ];
-            }
-            if (taskLower.includes('presentation') || taskLower.includes('slides')) {
-                return [
-                    { title: 'Outline key points', timeEstimate: '30 min', priority: 'high' },
-                    { title: 'Research supporting data', timeEstimate: '1 hour', priority: 'high' },
-                    { title: 'Create slide deck', timeEstimate: '2 hours', priority: 'high' },
-                    { title: 'Add visuals and graphics', timeEstimate: '45 min', priority: 'medium' },
-                    { title: 'Practice delivery', timeEstimate: '30 min', priority: 'medium' }
-                ];
-            }
-            if (taskLower.includes('move') || taskLower.includes('moving')) {
-                return [
-                    { title: 'Sort and declutter items', timeEstimate: '3 hours', priority: 'high' },
-                    { title: 'Get packing supplies', timeEstimate: '1 hour', priority: 'high' },
-                    { title: 'Pack room by room', timeEstimate: '4 hours', priority: 'high' },
-                    { title: 'Schedule movers/truck', timeEstimate: '30 min', priority: 'high' },
-                    { title: 'Update address everywhere', timeEstimate: '1 hour', priority: 'medium' }
-                ];
+            const today = new Date().toISOString().split('T')[0];
+            const pending = todos.filter(t => t.status !== 'completed');
+            const overdue = pending.filter(t => t.dueDate && t.dueDate < today);
+            const highPriority = pending.filter(t => t.priority === 'high');
+            
+            // Build schedule
+            const schedule = [];
+            let hour = 9;
+            
+            overdue.slice(0, 2).forEach(t => {
+                schedule.push({ time: formatTime(hour), task: t.title, type: 'overdue' });
+                hour += 1;
+            });
+            
+            highPriority.filter(t => !overdue.includes(t)).slice(0, 3).forEach(t => {
+                schedule.push({ time: formatTime(hour), task: t.title, type: 'high' });
+                hour += 0.75;
+            });
+            
+            if (hour >= 12 && hour < 13) {
+                schedule.push({ time: '12:00 PM', task: 'Lunch break', type: 'break' });
+                hour = 13;
             }
             
-            // Generic breakdown
-            return [
-                { title: `Research and gather info for: ${task.substring(0, 40)}`, timeEstimate: '30 min', priority: 'high' },
-                { title: 'Create action plan', timeEstimate: '20 min', priority: 'high' },
-                { title: 'Execute main task', timeEstimate: '1 hour', priority: 'high' },
-                { title: 'Review and refine', timeEstimate: '20 min', priority: 'medium' },
-                { title: 'Final checks and completion', timeEstimate: '15 min', priority: 'low' }
-            ];
+            pending.filter(t => t.priority === 'medium' && !overdue.includes(t) && !highPriority.includes(t))
+                .slice(0, 2).forEach(t => {
+                    if (hour < 17) {
+                        schedule.push({ time: formatTime(hour), task: t.title, type: 'medium' });
+                        hour += 0.5;
+                    }
+                });
+            
+            const html = schedule.map(s => `
+                <div class="ai-result-item" style="border-left: 3px solid ${s.type === 'overdue' ? 'var(--danger)' : s.type === 'high' ? 'var(--warning)' : s.type === 'break' ? 'var(--success)' : 'var(--accent)'};">
+                    <div>
+                        <div class="ai-result-text">${esc(s.task)}</div>
+                        <div class="ai-result-meta">${s.time}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            showAIResults(`Today's Plan (${pending.length} tasks)`, html || '<div class="ai-loading">No tasks to schedule</div>');
         }
         
-        // Add a single subtask
+        async function aiSuggest() {
+            const input = document.getElementById('taskInput').value.trim();
+            if (!input) {
+                alert('Enter a task first');
+                return;
+            }
+            
+            showAILoading('Getting suggestions...');
+            
+            try {
+                const res = await fetch(`${API_URL}/todos/ai/suggest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task: input, mode: 'suggest' })
+                });
+                const data = await res.json();
+                
+                const suggestion = data.success ? data.data : 'No suggestions available';
+                showAIResults('Suggestions', `<div style="white-space: pre-wrap; font-size: 13px; line-height: 1.6;">${esc(suggestion)}</div>`);
+            } catch (err) {
+                showAIResults('Error', '<div class="ai-loading">Failed to get suggestions</div>');
+            }
+        }
+        
+        // ===== SUBTASK HELPERS =====
         async function addSubtask(title, priority) {
             try {
                 await fetch(`${API_URL}/todos`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, priority, category: 'Task' })
+                    body: JSON.stringify({ title, priority })
                 });
-                fetchTodos();
-            } catch (err) { console.error('Error adding subtask:', err); }
+                fetchTasks();
+            } catch (err) {
+                console.error('Error adding subtask:', err);
+            }
         }
         
-        // Add all pending subtasks
-        async function addAllSubtasks() {
-            if (!window.pendingSubtasks || window.pendingSubtasks.length === 0) return;
-            
-            for (const st of window.pendingSubtasks) {
+        async function addAllSubtasks(subtasks) {
+            for (const st of subtasks) {
                 await addSubtask(st.title, st.priority || 'medium');
             }
-            window.pendingSubtasks = [];
-            closeAIResults();
-            document.getElementById('aiCommandInput').value = '';
+            closeAIPopover();
+            document.getElementById('taskInput').value = '';
         }
         
-        // AI Daily Plan: Create an optimized schedule for the day
-        async function aiDailyPlan() {
-            const btn = document.getElementById('aiPlanBtn');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Planning...';
+        function parseSubtasks(data, fallbackTask) {
+            if (!data) return generateSmartSubtasks(fallbackTask);
             
             try {
-                const today = new Date().toISOString().split('T')[0];
-                const pendingTodos = todos.filter(t => t.status !== 'completed');
-                const todayTodos = pendingTodos.filter(t => t.dueDate === today);
-                const overdueTodos = pendingTodos.filter(t => t.dueDate && t.dueDate < today);
-                const highPriority = pendingTodos.filter(t => t.priority === 'high');
-                
-                // Build a smart daily schedule
-                const schedule = [];
-                let currentHour = 9; // Start at 9 AM
-                
-                // First: Overdue items (most urgent)
-                for (const todo of overdueTodos.slice(0, 3)) {
-                    schedule.push({
-                        time: formatTimeSlot(currentHour),
-                        task: todo.title,
-                        type: 'overdue',
-                        duration: 60
-                    });
-                    currentHour += 1;
+                const jsonMatch = data.match(/\[.*\]/s);
+                if (jsonMatch) {
+                    return JSON.parse(jsonMatch[0]);
                 }
-                
-                // Add break if we had overdue items
-                if (overdueTodos.length > 0 && currentHour < 12) {
-                    schedule.push({ time: formatTimeSlot(currentHour), task: 'Short break - clear your mind', type: 'break', duration: 15 });
-                    currentHour += 0.25;
+            } catch (e) {}
+            
+            // Parse from text
+            const lines = data.split('\n').filter(l => l.trim());
+            const subtasks = [];
+            for (const line of lines) {
+                const match = line.match(/^[\d\-\*\.]+\s*(.+)/);
+                if (match && match[1].length > 5) {
+                    subtasks.push({ title: match[1].trim().substring(0, 100), timeEstimate: '~30 min', priority: 'medium' });
                 }
-                
-                // High priority items
-                for (const todo of highPriority.filter(t => !overdueTodos.includes(t)).slice(0, 3)) {
-                    schedule.push({
-                        time: formatTimeSlot(currentHour),
-                        task: todo.title,
-                        type: 'high',
-                        duration: 45
-                    });
-                    currentHour += 0.75;
-                }
-                
-                // Lunch break
-                if (currentHour >= 11.5 && currentHour < 14) {
-                    schedule.push({ time: '12:00 PM', task: 'Lunch break', type: 'break', duration: 60 });
-                    currentHour = 13;
-                }
-                
-                // Today's items
-                for (const todo of todayTodos.filter(t => !highPriority.includes(t) && !overdueTodos.includes(t)).slice(0, 3)) {
-                    schedule.push({
-                        time: formatTimeSlot(currentHour),
-                        task: todo.title,
-                        type: 'today',
-                        duration: 45
-                    });
-                    currentHour += 0.75;
-                }
-                
-                // Fill remaining time with medium priority
-                const mediumTodos = pendingTodos.filter(t => 
-                    t.priority === 'medium' && 
-                    !todayTodos.includes(t) && 
-                    !overdueTodos.includes(t) &&
-                    !highPriority.includes(t)
-                );
-                for (const todo of mediumTodos.slice(0, 2)) {
-                    if (currentHour >= 17) break;
-                    schedule.push({
-                        time: formatTimeSlot(currentHour),
-                        task: todo.title,
-                        type: 'medium',
-                        duration: 30
-                    });
-                    currentHour += 0.5;
-                }
-                
-                // End of day wrap-up
-                if (currentHour < 17) {
-                    schedule.push({
-                        time: formatTimeSlot(Math.min(currentHour, 16.5)),
-                        task: 'Review progress & plan tomorrow',
-                        type: 'break',
-                        duration: 15
-                    });
-                }
-                
-                // Build the HTML
-                const scheduleHtml = schedule.map(s => `
-                    <div class="ai-plan-task ${s.type === 'break' ? 'break' : ''}" style="border-left-color: ${
-                        s.type === 'overdue' ? '#ef4444' : 
-                        s.type === 'high' ? '#f59e0b' : 
-                        s.type === 'break' ? '#10b981' : '#8b5cf6'
-                    };">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span><strong>${s.time}</strong> - ${esc(s.task)}</span>
-                            <span style="font-size: 11px; color: rgba(255,255,255,0.5);">${s.duration} min</span>
-                        </div>
-                    </div>
-                `).join('');
-                
-                // Summary insights
-                const insights = [];
-                if (overdueTodos.length > 0) {
-                    insights.push(`⚠️ You have ${overdueTodos.length} overdue task(s) - tackle these first!`);
-                }
-                if (highPriority.length > 3) {
-                    insights.push(`🔥 ${highPriority.length} high-priority items - consider delegating some.`);
-                }
-                if (pendingTodos.length > 10) {
-                    insights.push(`📊 ${pendingTodos.length} pending tasks - try completing 3-5 today for good progress.`);
-                }
-                if (pendingTodos.length === 0) {
-                    insights.push(`🎉 All caught up! Great job staying on top of things.`);
-                }
-                
-                const insightsHtml = insights.length > 0 ? `
-                    <div class="ai-insight">
-                        <div class="ai-insight-title">💡 AI Insights</div>
-                        <div class="ai-insight-content">${insights.join('<br>')}</div>
-                    </div>
-                ` : '';
-                
-                showAIResults(`📅 Your Optimized Daily Plan`, `
-                    <div style="margin-bottom: 16px;">
-                        <div style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 12px;">
-                            📊 <strong>${pendingTodos.length}</strong> pending • 
-                            <span style="color: #ef4444;"><strong>${overdueTodos.length}</strong> overdue</span> • 
-                            <span style="color: #f59e0b;"><strong>${highPriority.length}</strong> high priority</span>
-                        </div>
-                        ${scheduleHtml}
-                    </div>
-                    ${insightsHtml}
-                `);
-                
-            } catch (err) {
-                console.error('AI planning error:', err);
-                showAIResults('❌ Error', 'Failed to create daily plan. Please try again.');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '📅 Plan My Day';
             }
+            
+            return subtasks.length > 0 ? subtasks.slice(0, 6) : generateSmartSubtasks(fallbackTask);
         }
         
-        function formatTimeSlot(hour) {
+        function generateSmartSubtasks(task) {
+            const taskLower = task.toLowerCase();
+            
+            if (taskLower.match(/party|event|celebration/)) {
+                return [
+                    { title: 'Create guest list', timeEstimate: '20 min', priority: 'high' },
+                    { title: 'Send invitations', timeEstimate: '30 min', priority: 'high' },
+                    { title: 'Plan menu', timeEstimate: '1 hour', priority: 'medium' },
+                    { title: 'Arrange decorations', timeEstimate: '45 min', priority: 'medium' }
+                ];
+            }
+            
+            if (taskLower.match(/interview|job/)) {
+                return [
+                    { title: 'Research the company', timeEstimate: '1 hour', priority: 'high' },
+                    { title: 'Review common questions', timeEstimate: '45 min', priority: 'high' },
+                    { title: 'Prepare STAR examples', timeEstimate: '1 hour', priority: 'high' },
+                    { title: 'Plan outfit', timeEstimate: '20 min', priority: 'medium' }
+                ];
+            }
+            
+            if (taskLower.match(/presentation|slides/)) {
+                return [
+                    { title: 'Outline key points', timeEstimate: '30 min', priority: 'high' },
+                    { title: 'Research data', timeEstimate: '1 hour', priority: 'high' },
+                    { title: 'Create slides', timeEstimate: '2 hours', priority: 'high' },
+                    { title: 'Practice delivery', timeEstimate: '30 min', priority: 'medium' }
+                ];
+            }
+            
+            return [
+                { title: 'Research and plan', timeEstimate: '30 min', priority: 'high' },
+                { title: 'Execute main task', timeEstimate: '1 hour', priority: 'high' },
+                { title: 'Review and refine', timeEstimate: '20 min', priority: 'medium' },
+                { title: 'Final checks', timeEstimate: '15 min', priority: 'low' }
+            ];
+        }
+        
+        // ===== HELPERS =====
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
+        }
+        
+        function formatDate(d) {
+            const date = new Date(d + 'T00:00:00');
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const diff = Math.ceil((date - today) / (1000*60*60*24));
+            
+            if (diff === 0) return 'Today';
+            if (diff === 1) return 'Tomorrow';
+            if (diff === -1) return 'Yesterday';
+            if (diff < -1) return `${Math.abs(diff)} days ago`;
+            if (diff < 7) return date.toLocaleDateString('en-US', { weekday: 'short' });
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+        
+        function formatTime(hour) {
             const h = Math.floor(hour);
             const m = Math.round((hour - h) * 60);
             const ampm = h >= 12 ? 'PM' : 'AM';
@@ -1462,161 +1786,61 @@
             return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
         }
         
-        // AI Smart Suggestions: Analyze todos and provide actionable insights
-        async function aiSmartSuggestions() {
-            const btn = document.getElementById('aiSmartBtn');
-            btn.disabled = true;
-            btn.innerHTML = '⏳ Analyzing...';
-            
-            try {
-                const today = new Date().toISOString().split('T')[0];
-                const pending = todos.filter(t => t.status !== 'completed');
-                const completed = todos.filter(t => t.status === 'completed');
-                const overdue = pending.filter(t => t.dueDate && t.dueDate < today);
-                
-                // Analyze patterns
-                const categories = {};
-                const priorities = { high: 0, medium: 0, low: 0 };
-                pending.forEach(t => {
-                    categories[t.category || 'Uncategorized'] = (categories[t.category || 'Uncategorized'] || 0) + 1;
-                    priorities[t.priority]++;
-                });
-                
-                const topCategory = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
-                const completionRate = todos.length > 0 ? Math.round((completed.length / todos.length) * 100) : 0;
-                
-                // Generate smart suggestions
-                const suggestions = [];
-                
-                if (overdue.length > 0) {
-                    suggestions.push({
-                        icon: '🚨',
-                        title: `Clear ${overdue.length} Overdue Task${overdue.length > 1 ? 's' : ''}`,
-                        desc: `"${overdue[0].title}" is overdue. Consider completing it now or rescheduling.`,
-                        action: `Focus on: ${overdue[0].title}`
-                    });
-                }
-                
-                if (priorities.high > 3) {
-                    suggestions.push({
-                        icon: '⚡',
-                        title: 'Too Many High Priority Tasks',
-                        desc: `You have ${priorities.high} high-priority items. Try to limit to 3 per day for better focus.`,
-                        action: 'Review and reprioritize'
-                    });
-                }
-                
-                if (topCategory && topCategory[1] > 3) {
-                    suggestions.push({
-                        icon: '📁',
-                        title: `${topCategory[0]} Tasks Piling Up`,
-                        desc: `${topCategory[1]} tasks in ${topCategory[0]}. Consider batching similar tasks together.`,
-                        action: `Batch ${topCategory[0]} tasks`
-                    });
-                }
-                
-                if (completionRate < 30 && todos.length > 5) {
-                    suggestions.push({
-                        icon: '📈',
-                        title: 'Boost Your Completion Rate',
-                        desc: `Only ${completionRate}% complete. Try the "2-minute rule" - if it takes less than 2 minutes, do it now!`,
-                        action: 'Quick wins first'
-                    });
-                }
-                
-                if (pending.filter(t => !t.dueDate).length > 5) {
-                    suggestions.push({
-                        icon: '📅',
-                        title: 'Add Due Dates',
-                        desc: `${pending.filter(t => !t.dueDate).length} tasks without due dates. Adding deadlines increases completion by 40%!`,
-                        action: 'Schedule your tasks'
-                    });
-                }
-                
-                if (completed.length > 0 && pending.length < 3) {
-                    suggestions.push({
-                        icon: '🎉',
-                        title: 'Great Progress!',
-                        desc: `You've completed ${completed.length} tasks! You're almost caught up. Keep the momentum going!`,
-                        action: 'Finish strong'
-                    });
-                }
-                
-                // Always add a motivational tip
-                const tips = [
-                    { icon: '🧠', title: 'Deep Work Tip', desc: 'Block 2 hours of uninterrupted time for your most important task.' },
-                    { icon: '✅', title: 'Quick Win Strategy', desc: 'Start with a small, easy task to build momentum.' },
-                    { icon: '🎯', title: 'Focus Technique', desc: 'Use the Pomodoro method: 25 min work, 5 min break.' },
-                    { icon: '🌅', title: 'Morning Routine', desc: 'Tackle your hardest task first when your energy is highest.' }
-                ];
-                suggestions.push(tips[Math.floor(Math.random() * tips.length)]);
-                
-                const suggestionsHtml = suggestions.map(s => `
-                    <div style="background: rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; margin-bottom: 10px;">
-                        <div style="display: flex; align-items: flex-start; gap: 12px;">
-                            <div style="font-size: 24px;">${s.icon}</div>
-                            <div style="flex: 1;">
-                                <div style="font-weight: 600; margin-bottom: 4px;">${s.title}</div>
-                                <div style="color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.5;">${s.desc}</div>
-                                ${s.action ? `<div style="color: #a5b4fc; font-size: 12px; margin-top: 6px;">💡 ${s.action}</div>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-                
-                // Stats summary
-                const statsHtml = `
-                    <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
-                        <div style="background: rgba(99,102,241,0.2); padding: 10px 16px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700;">${pending.length}</div>
-                            <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Pending</div>
-                        </div>
-                        <div style="background: rgba(16,185,129,0.2); padding: 10px 16px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700;">${completed.length}</div>
-                            <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Done</div>
-                        </div>
-                        <div style="background: rgba(239,68,68,0.2); padding: 10px 16px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700;">${overdue.length}</div>
-                            <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Overdue</div>
-                        </div>
-                        <div style="background: rgba(251,191,36,0.2); padding: 10px 16px; border-radius: 8px; text-align: center;">
-                            <div style="font-size: 24px; font-weight: 700;">${completionRate}%</div>
-                            <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Complete</div>
-                        </div>
-                    </div>
-                `;
-                
-                showAIResults('💡 Smart Suggestions', statsHtml + suggestionsHtml);
-                
-            } catch (err) {
-                console.error('AI suggestions error:', err);
-                showAIResults('❌ Error', 'Failed to generate suggestions. Please try again.');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '💡 Smart Suggestions';
-            }
-        }
-        
-        // Helpers
-        function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
-        function formatDate(d) {
-            const date = new Date(d + 'T00:00:00');
+        function detectDueDate(text) {
             const today = new Date();
-            today.setHours(0,0,0,0);
-            const diff = Math.ceil((date - today) / (1000*60*60*24));
-            if (diff === 0) return 'Today';
-            if (diff === 1) return 'Tomorrow';
-            if (diff === -1) return 'Yesterday';
-            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            if (text.includes('today')) {
+                return today.toISOString().split('T')[0];
+            }
+            if (text.includes('tomorrow')) {
+                today.setDate(today.getDate() + 1);
+                return today.toISOString().split('T')[0];
+            }
+            if (text.includes('next week')) {
+                today.setDate(today.getDate() + 7);
+                return today.toISOString().split('T')[0];
+            }
+            
+            const dayMatch = text.match(/next (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/);
+            if (dayMatch) {
+                const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+                const targetDay = days.indexOf(dayMatch[1]);
+                const currentDay = today.getDay();
+                let daysUntil = targetDay - currentDay;
+                if (daysUntil <= 0) daysUntil += 7;
+                today.setDate(today.getDate() + daysUntil);
+                return today.toISOString().split('T')[0];
+            }
+            
+            return '';
         }
         
-        // Close modal on outside click
-        document.getElementById('editModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('editModal')) closeEditModal();
+        function tryParseJSON(str) {
+            try {
+                const match = str.match(/\{[\s\S]*\}/);
+                if (match) return JSON.parse(match[0]);
+            } catch (e) {}
+            return { title: str.substring(0, 100) };
+        }
+        
+        // ===== KEYBOARD SHORTCUTS =====
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                openAIPopover();
+            }
+            if ((e.metaKey || e.ctrlKey) && e.key === 'n') {
+                e.preventDefault();
+                document.getElementById('taskInput').focus();
+            }
+            if (e.key === 'Escape') {
+                closeAIPopover();
+                closeEditModal();
+            }
         });
         
-        // Init
-        fetchTodos();
+        // ===== INIT =====
+        fetchTasks();
     </script>
 </body>
 </html>
