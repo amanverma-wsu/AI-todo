@@ -48,7 +48,3 @@ npm run deploy:prod   # Deploy to production
 | PUT | /todos/{id} | Update todo |
 | DELETE | /todos/{id} | Delete todo |
 | POST | /todos/ai/suggest | AI task processing |
-
-## License
-
-MIT
