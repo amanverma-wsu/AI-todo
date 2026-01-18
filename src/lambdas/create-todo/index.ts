@@ -11,6 +11,7 @@ interface CreateTodoRequest {
   title: string;
   description?: string;
   priority?: 'low' | 'medium' | 'high';
+  category?: string;
   dueDate?: string;
   tags?: string[];
   generateSuggestions?: boolean;
@@ -49,6 +50,7 @@ export const handler: APIGatewayProxyHandlerV2 = async (event) => {
       description: body.description,
       status: 'pending',
       priority: body.priority || 'medium',
+      category: body.category,
       dueDate: body.dueDate,
       tags: body.tags || [],
       aiSuggestion,
