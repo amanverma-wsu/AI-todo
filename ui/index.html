@@ -343,6 +343,180 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
+        /* AI Command Panel */
+        .ai-panel {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+        }
+        .ai-panel-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .ai-panel-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .ai-panel-title {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .ai-panel-subtitle {
+            color: rgba(255,255,255,0.7);
+            font-size: 13px;
+        }
+        .ai-command-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+            border-radius: 12px;
+            font-size: 15px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            margin-bottom: 12px;
+            transition: all 0.2s;
+        }
+        .ai-command-input::placeholder { color: rgba(255,255,255,0.5); }
+        .ai-command-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: rgba(255,255,255,0.15);
+        }
+        .ai-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .ai-action-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .ai-action-btn.primary {
+            background: linear-gradient(135deg, #8b5cf6, #6366f1);
+            color: white;
+        }
+        .ai-action-btn.secondary {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .ai-action-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .ai-action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        /* AI Results Panel */
+        .ai-results {
+            display: none;
+            margin-top: 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .ai-results.visible { display: block; animation: slideIn 0.3s ease; }
+        .ai-results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .ai-results-title {
+            color: #a5b4fc;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .ai-results-close {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .ai-results-content {
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+        .ai-subtask {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ai-subtask-info { flex: 1; }
+        .ai-subtask-title {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .ai-subtask-meta {
+            color: rgba(255,255,255,0.6);
+            font-size: 12px;
+        }
+        .ai-subtask-add {
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .ai-subtask-add:hover { background: #059669; }
+        
+        /* Daily Plan Styles */
+        .ai-plan-task {
+            background: rgba(255,255,255,0.08);
+            border-left: 3px solid #8b5cf6;
+            padding: 10px 14px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 6px;
+        }
+        .ai-plan-task.break {
+            border-left-color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .ai-insight {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.1));
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 12px;
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+        .ai-insight-title {
+            color: #fbbf24;
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        .ai-insight-content {
+            color: rgba(255,255,255,0.85);
+            font-size: 13px;
+        }
+        
         /* Empty State */
         .empty-state {
             padding: 60px 20px;
@@ -409,11 +583,46 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>Todo App</h1>
+            <h1>✓ AI Todo App</h1>
             <div class="header-actions">
-                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
             </div>
         </header>
+        
+        <!-- AI Command Center -->
+        <div class="ai-panel">
+            <div class="ai-panel-header">
+                <div class="ai-panel-icon">🤖</div>
+                <div>
+                    <div class="ai-panel-title">AI Command Center</div>
+                    <div class="ai-panel-subtitle">Let AI handle the heavy lifting - describe tasks naturally or let it plan your day</div>
+                </div>
+            </div>
+            <input type="text" class="ai-command-input" id="aiCommandInput" 
+                placeholder='Try: "Plan a birthday party for next Saturday" or "I need to prepare for a job interview"'
+                onkeypress="if(event.key==='Enter') aiAutoCreate()">
+            <div class="ai-actions">
+                <button class="ai-action-btn primary" onclick="aiAutoCreate()" id="aiCreateBtn">
+                    ✨ Auto-Create Task
+                </button>
+                <button class="ai-action-btn secondary" onclick="aiBreakdown()" id="aiBreakdownBtn">
+                    📋 Break Into Subtasks
+                </button>
+                <button class="ai-action-btn secondary" onclick="aiDailyPlan()" id="aiPlanBtn">
+                    📅 Plan My Day
+                </button>
+                <button class="ai-action-btn secondary" onclick="aiSmartSuggestions()" id="aiSmartBtn">
+                    💡 Smart Suggestions
+                </button>
+            </div>
+            <div class="ai-results" id="aiResults">
+                <div class="ai-results-header">
+                    <span class="ai-results-title" id="aiResultsTitle">AI Results</span>
+                    <button class="ai-results-close" onclick="closeAIResults()">×</button>
+                </div>
+                <div class="ai-results-content" id="aiResultsContent"></div>
+            </div>
+        </div>
         
         <!-- Stats -->
         <div class="stats">
@@ -464,12 +673,12 @@
                 <input type="text" id="tagsInput" placeholder="Tags (comma separated)">
             </div>
             <div class="form-row" style="justify-content: flex-end;">
-                <button class="btn btn-ai" onclick="getAISuggestion()" id="aiBtn">AI Suggest</button>
-                <button class="btn btn-primary" onclick="addTodo()">Add Todo</button>
+                <button class="btn btn-ai" onclick="getAISuggestion()" id="aiBtn">💡 Quick Suggest</button>
+                <button class="btn btn-primary" onclick="addTodo()">➕ Add Todo</button>
             </div>
             <div class="ai-box" id="aiBox">
                 <div class="ai-box-header">
-                    <span class="ai-box-title">AI Suggestion</span>
+                    <span class="ai-box-title">✨ AI Suggestion</span>
                     <button class="ai-box-close" onclick="closeAI()">×</button>
                 </div>
                 <div class="ai-box-content" id="aiContent"></div>
@@ -808,7 +1017,7 @@
             
             const btn = document.getElementById('aiBtn');
             btn.disabled = true;
-            btn.textContent = 'Thinking...';
+            btn.textContent = '🤔 Thinking...';
             
             try {
                 const res = await fetch(`${API_URL}/todos/ai/suggest`, {
@@ -824,11 +1033,569 @@
                 document.getElementById('aiBox').classList.add('visible');
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'AI Suggest';
+                btn.textContent = '💡 Quick Suggest';
             }
         }
         
         function closeAI() { document.getElementById('aiBox').classList.remove('visible'); }
+        function closeAIResults() { document.getElementById('aiResults').classList.remove('visible'); }
+        
+        // Show AI results
+        function showAIResults(title, content) {
+            document.getElementById('aiResultsTitle').textContent = title;
+            document.getElementById('aiResultsContent').innerHTML = content;
+            document.getElementById('aiResults').classList.add('visible');
+        }
+        
+        // AI Auto-Create: Parse natural language and create todo automatically
+        async function aiAutoCreate() {
+            const input = document.getElementById('aiCommandInput').value.trim();
+            if (!input) { alert('Enter a task description first'); return; }
+            
+            const btn = document.getElementById('aiCreateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Creating...';
+            
+            try {
+                // Use AI to parse the natural language input
+                const res = await fetch(`${API_URL}/todos/ai/suggest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ task: input, mode: 'parse' })
+                });
+                const data = await res.json();
+                
+                if (data.success && data.data) {
+                    const parsed = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+                    
+                    // Detect priority from keywords
+                    let priority = 'medium';
+                    const inputLower = input.toLowerCase();
+                    if (inputLower.match(/urgent|asap|important|critical|today|now/)) priority = 'high';
+                    else if (inputLower.match(/later|someday|eventually|when possible/)) priority = 'low';
+                    
+                    // Detect due date from natural language
+                    let dueDate = '';
+                    const today = new Date();
+                    if (inputLower.includes('today')) {
+                        dueDate = today.toISOString().split('T')[0];
+                    } else if (inputLower.includes('tomorrow')) {
+                        today.setDate(today.getDate() + 1);
+                        dueDate = today.toISOString().split('T')[0];
+                    } else if (inputLower.includes('next week')) {
+                        today.setDate(today.getDate() + 7);
+                        dueDate = today.toISOString().split('T')[0];
+                    } else if (inputLower.match(/next (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/)) {
+                        const days = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+                        const match = inputLower.match(/next (monday|tuesday|wednesday|thursday|friday|saturday|sunday)/);
+                        const targetDay = days.indexOf(match[1]);
+                        const currentDay = today.getDay();
+                        let daysUntil = targetDay - currentDay;
+                        if (daysUntil <= 0) daysUntil += 7;
+                        today.setDate(today.getDate() + daysUntil);
+                        dueDate = today.toISOString().split('T')[0];
+                    }
+                    
+                    // Create the todo
+                    const todoData = {
+                        title: parsed.title || input.substring(0, 100),
+                        description: parsed.description || '',
+                        category: parsed.category || 'General',
+                        priority: priority,
+                        dueDate: dueDate || undefined,
+                        tags: parsed.tags || []
+                    };
+                    
+                    const createRes = await fetch(`${API_URL}/todos`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(todoData)
+                    });
+                    
+                    if (createRes.ok) {
+                        document.getElementById('aiCommandInput').value = '';
+                        showAIResults('✅ Task Created!', `
+<div style="text-align: center; padding: 20px;">
+    <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
+    <div style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">${esc(todoData.title)}</div>
+    <div style="color: rgba(255,255,255,0.7); margin-bottom: 16px;">${todoData.description ? esc(todoData.description) : 'No description'}</div>
+    <div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">
+        <span style="background: rgba(99,102,241,0.3); padding: 4px 12px; border-radius: 20px; font-size: 12px;">📁 ${todoData.category}</span>
+        <span style="background: rgba(${priority === 'high' ? '239,68,68' : priority === 'medium' ? '245,158,11' : '34,197,94'},0.3); padding: 4px 12px; border-radius: 20px; font-size: 12px;">⚡ ${priority}</span>
+        ${dueDate ? `<span style="background: rgba(139,92,246,0.3); padding: 4px 12px; border-radius: 20px; font-size: 12px;">📅 ${formatDate(dueDate)}</span>` : ''}
+    </div>
+</div>`);
+                        fetchTodos();
+                    }
+                }
+            } catch (err) {
+                console.error('AI auto-create error:', err);
+                showAIResults('❌ Error', 'Failed to create task. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '✨ Auto-Create Task';
+            }
+        }
+        
+        // AI Task Breakdown: Break a complex task into subtasks
+        async function aiBreakdown() {
+            const input = document.getElementById('aiCommandInput').value.trim();
+            if (!input) { alert('Enter a task to break down'); return; }
+            
+            const btn = document.getElementById('aiBreakdownBtn');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Analyzing...';
+            
+            try {
+                const res = await fetch(`${API_URL}/todos/ai/suggest`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        task: `Break down this task into 4-6 specific actionable subtasks with time estimates. Task: "${input}". Return as JSON array: [{"title":"...","timeEstimate":"...","priority":"high/medium/low"}]`,
+                        mode: 'suggest' 
+                    })
+                });
+                const data = await res.json();
+                
+                // Parse subtasks from AI response
+                let subtasks = [];
+                if (data.success && data.data) {
+                    const jsonMatch = data.data.match(/\[.*\]/s);
+                    if (jsonMatch) {
+                        try {
+                            subtasks = JSON.parse(jsonMatch[0]);
+                        } catch (e) {
+                            // Fallback parsing for non-JSON responses
+                            subtasks = parseSubtasksFromText(data.data, input);
+                        }
+                    } else {
+                        subtasks = parseSubtasksFromText(data.data, input);
+                    }
+                }
+                
+                // If no subtasks parsed, generate smart defaults
+                if (subtasks.length === 0) {
+                    subtasks = generateSmartSubtasks(input);
+                }
+                
+                const subtasksHtml = subtasks.map((st, i) => `
+                    <div class="ai-subtask">
+                        <div class="ai-subtask-info">
+                            <div class="ai-subtask-title">${i + 1}. ${esc(st.title)}</div>
+                            <div class="ai-subtask-meta">
+                                ⏱️ ${st.timeEstimate || '~30 min'} • 
+                                <span style="color: ${st.priority === 'high' ? '#f87171' : st.priority === 'low' ? '#34d399' : '#fbbf24'}">
+                                    ${st.priority || 'medium'} priority
+                                </span>
+                            </div>
+                        </div>
+                        <button class="ai-subtask-add" onclick="addSubtask('${esc(st.title.replace(/'/g, "\\'"))}', '${st.priority || 'medium'}')">+ Add</button>
+                    </div>
+                `).join('');
+                
+                showAIResults(`📋 Task Breakdown: ${subtasks.length} Subtasks`, `
+                    <div style="margin-bottom: 12px; color: rgba(255,255,255,0.7); font-size: 13px;">
+                        Breaking down: "<strong>${esc(input)}</strong>"
+                    </div>
+                    ${subtasksHtml}
+                    <button class="ai-action-btn primary" style="width: 100%; margin-top: 12px; justify-content: center;" onclick="addAllSubtasks()">
+                        ➕ Add All Subtasks
+                    </button>
+                `);
+                
+                // Store subtasks for "Add All"
+                window.pendingSubtasks = subtasks;
+                
+            } catch (err) {
+                console.error('AI breakdown error:', err);
+                showAIResults('❌ Error', 'Failed to break down task. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '📋 Break Into Subtasks';
+            }
+        }
+        
+        // Parse subtasks from text response
+        function parseSubtasksFromText(text, originalTask) {
+            const lines = text.split('\n').filter(l => l.trim());
+            const subtasks = [];
+            for (const line of lines) {
+                const match = line.match(/^[\d\-\*\.]+\s*(.+)/); 
+                if (match && match[1].length > 5) {
+                    subtasks.push({
+                        title: match[1].trim().substring(0, 100),
+                        timeEstimate: '~30 min',
+                        priority: 'medium'
+                    });
+                }
+            }
+            return subtasks.slice(0, 6);
+        }
+        
+        // Generate smart subtasks based on task type
+        function generateSmartSubtasks(task) {
+            const taskLower = task.toLowerCase();
+            
+            if (taskLower.includes('party') || taskLower.includes('event')) {
+                return [
+                    { title: 'Create guest list', timeEstimate: '20 min', priority: 'high' },
+                    { title: 'Send invitations', timeEstimate: '30 min', priority: 'high' },
+                    { title: 'Plan menu and order food', timeEstimate: '1 hour', priority: 'medium' },
+                    { title: 'Arrange decorations', timeEstimate: '45 min', priority: 'medium' },
+                    { title: 'Prepare playlist/entertainment', timeEstimate: '30 min', priority: 'low' }
+                ];
+            }
+            if (taskLower.includes('interview') || taskLower.includes('job')) {
+                return [
+                    { title: 'Research the company', timeEstimate: '1 hour', priority: 'high' },
+                    { title: 'Review common interview questions', timeEstimate: '45 min', priority: 'high' },
+                    { title: 'Prepare STAR method examples', timeEstimate: '1 hour', priority: 'high' },
+                    { title: 'Plan and prepare outfit', timeEstimate: '20 min', priority: 'medium' },
+                    { title: 'Prepare questions to ask', timeEstimate: '30 min', priority: 'medium' }
+                ];
+            }
+            if (taskLower.includes('presentation') || taskLower.includes('slides')) {
+                return [
+                    { title: 'Outline key points', timeEstimate: '30 min', priority: 'high' },
+                    { title: 'Research supporting data', timeEstimate: '1 hour', priority: 'high' },
+                    { title: 'Create slide deck', timeEstimate: '2 hours', priority: 'high' },
+                    { title: 'Add visuals and graphics', timeEstimate: '45 min', priority: 'medium' },
+                    { title: 'Practice delivery', timeEstimate: '30 min', priority: 'medium' }
+                ];
+            }
+            if (taskLower.includes('move') || taskLower.includes('moving')) {
+                return [
+                    { title: 'Sort and declutter items', timeEstimate: '3 hours', priority: 'high' },
+                    { title: 'Get packing supplies', timeEstimate: '1 hour', priority: 'high' },
+                    { title: 'Pack room by room', timeEstimate: '4 hours', priority: 'high' },
+                    { title: 'Schedule movers/truck', timeEstimate: '30 min', priority: 'high' },
+                    { title: 'Update address everywhere', timeEstimate: '1 hour', priority: 'medium' }
+                ];
+            }
+            
+            // Generic breakdown
+            return [
+                { title: `Research and gather info for: ${task.substring(0, 40)}`, timeEstimate: '30 min', priority: 'high' },
+                { title: 'Create action plan', timeEstimate: '20 min', priority: 'high' },
+                { title: 'Execute main task', timeEstimate: '1 hour', priority: 'high' },
+                { title: 'Review and refine', timeEstimate: '20 min', priority: 'medium' },
+                { title: 'Final checks and completion', timeEstimate: '15 min', priority: 'low' }
+            ];
+        }
+        
+        // Add a single subtask
+        async function addSubtask(title, priority) {
+            try {
+                await fetch(`${API_URL}/todos`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, priority, category: 'Task' })
+                });
+                fetchTodos();
+            } catch (err) { console.error('Error adding subtask:', err); }
+        }
+        
+        // Add all pending subtasks
+        async function addAllSubtasks() {
+            if (!window.pendingSubtasks || window.pendingSubtasks.length === 0) return;
+            
+            for (const st of window.pendingSubtasks) {
+                await addSubtask(st.title, st.priority || 'medium');
+            }
+            window.pendingSubtasks = [];
+            closeAIResults();
+            document.getElementById('aiCommandInput').value = '';
+        }
+        
+        // AI Daily Plan: Create an optimized schedule for the day
+        async function aiDailyPlan() {
+            const btn = document.getElementById('aiPlanBtn');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Planning...';
+            
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const pendingTodos = todos.filter(t => t.status !== 'completed');
+                const todayTodos = pendingTodos.filter(t => t.dueDate === today);
+                const overdueTodos = pendingTodos.filter(t => t.dueDate && t.dueDate < today);
+                const highPriority = pendingTodos.filter(t => t.priority === 'high');
+                
+                // Build a smart daily schedule
+                const schedule = [];
+                let currentHour = 9; // Start at 9 AM
+                
+                // First: Overdue items (most urgent)
+                for (const todo of overdueTodos.slice(0, 3)) {
+                    schedule.push({
+                        time: formatTimeSlot(currentHour),
+                        task: todo.title,
+                        type: 'overdue',
+                        duration: 60
+                    });
+                    currentHour += 1;
+                }
+                
+                // Add break if we had overdue items
+                if (overdueTodos.length > 0 && currentHour < 12) {
+                    schedule.push({ time: formatTimeSlot(currentHour), task: 'Short break - clear your mind', type: 'break', duration: 15 });
+                    currentHour += 0.25;
+                }
+                
+                // High priority items
+                for (const todo of highPriority.filter(t => !overdueTodos.includes(t)).slice(0, 3)) {
+                    schedule.push({
+                        time: formatTimeSlot(currentHour),
+                        task: todo.title,
+                        type: 'high',
+                        duration: 45
+                    });
+                    currentHour += 0.75;
+                }
+                
+                // Lunch break
+                if (currentHour >= 11.5 && currentHour < 14) {
+                    schedule.push({ time: '12:00 PM', task: 'Lunch break', type: 'break', duration: 60 });
+                    currentHour = 13;
+                }
+                
+                // Today's items
+                for (const todo of todayTodos.filter(t => !highPriority.includes(t) && !overdueTodos.includes(t)).slice(0, 3)) {
+                    schedule.push({
+                        time: formatTimeSlot(currentHour),
+                        task: todo.title,
+                        type: 'today',
+                        duration: 45
+                    });
+                    currentHour += 0.75;
+                }
+                
+                // Fill remaining time with medium priority
+                const mediumTodos = pendingTodos.filter(t => 
+                    t.priority === 'medium' && 
+                    !todayTodos.includes(t) && 
+                    !overdueTodos.includes(t) &&
+                    !highPriority.includes(t)
+                );
+                for (const todo of mediumTodos.slice(0, 2)) {
+                    if (currentHour >= 17) break;
+                    schedule.push({
+                        time: formatTimeSlot(currentHour),
+                        task: todo.title,
+                        type: 'medium',
+                        duration: 30
+                    });
+                    currentHour += 0.5;
+                }
+                
+                // End of day wrap-up
+                if (currentHour < 17) {
+                    schedule.push({
+                        time: formatTimeSlot(Math.min(currentHour, 16.5)),
+                        task: 'Review progress & plan tomorrow',
+                        type: 'break',
+                        duration: 15
+                    });
+                }
+                
+                // Build the HTML
+                const scheduleHtml = schedule.map(s => `
+                    <div class="ai-plan-task ${s.type === 'break' ? 'break' : ''}" style="border-left-color: ${
+                        s.type === 'overdue' ? '#ef4444' : 
+                        s.type === 'high' ? '#f59e0b' : 
+                        s.type === 'break' ? '#10b981' : '#8b5cf6'
+                    };">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span><strong>${s.time}</strong> - ${esc(s.task)}</span>
+                            <span style="font-size: 11px; color: rgba(255,255,255,0.5);">${s.duration} min</span>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Summary insights
+                const insights = [];
+                if (overdueTodos.length > 0) {
+                    insights.push(`⚠️ You have ${overdueTodos.length} overdue task(s) - tackle these first!`);
+                }
+                if (highPriority.length > 3) {
+                    insights.push(`🔥 ${highPriority.length} high-priority items - consider delegating some.`);
+                }
+                if (pendingTodos.length > 10) {
+                    insights.push(`📊 ${pendingTodos.length} pending tasks - try completing 3-5 today for good progress.`);
+                }
+                if (pendingTodos.length === 0) {
+                    insights.push(`🎉 All caught up! Great job staying on top of things.`);
+                }
+                
+                const insightsHtml = insights.length > 0 ? `
+                    <div class="ai-insight">
+                        <div class="ai-insight-title">💡 AI Insights</div>
+                        <div class="ai-insight-content">${insights.join('<br>')}</div>
+                    </div>
+                ` : '';
+                
+                showAIResults(`📅 Your Optimized Daily Plan`, `
+                    <div style="margin-bottom: 16px;">
+                        <div style="color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 12px;">
+                            📊 <strong>${pendingTodos.length}</strong> pending • 
+                            <span style="color: #ef4444;"><strong>${overdueTodos.length}</strong> overdue</span> • 
+                            <span style="color: #f59e0b;"><strong>${highPriority.length}</strong> high priority</span>
+                        </div>
+                        ${scheduleHtml}
+                    </div>
+                    ${insightsHtml}
+                `);
+                
+            } catch (err) {
+                console.error('AI planning error:', err);
+                showAIResults('❌ Error', 'Failed to create daily plan. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '📅 Plan My Day';
+            }
+        }
+        
+        function formatTimeSlot(hour) {
+            const h = Math.floor(hour);
+            const m = Math.round((hour - h) * 60);
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            const h12 = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+            return `${h12}:${m.toString().padStart(2, '0')} ${ampm}`;
+        }
+        
+        // AI Smart Suggestions: Analyze todos and provide actionable insights
+        async function aiSmartSuggestions() {
+            const btn = document.getElementById('aiSmartBtn');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Analyzing...';
+            
+            try {
+                const today = new Date().toISOString().split('T')[0];
+                const pending = todos.filter(t => t.status !== 'completed');
+                const completed = todos.filter(t => t.status === 'completed');
+                const overdue = pending.filter(t => t.dueDate && t.dueDate < today);
+                
+                // Analyze patterns
+                const categories = {};
+                const priorities = { high: 0, medium: 0, low: 0 };
+                pending.forEach(t => {
+                    categories[t.category || 'Uncategorized'] = (categories[t.category || 'Uncategorized'] || 0) + 1;
+                    priorities[t.priority]++;
+                });
+                
+                const topCategory = Object.entries(categories).sort((a, b) => b[1] - a[1])[0];
+                const completionRate = todos.length > 0 ? Math.round((completed.length / todos.length) * 100) : 0;
+                
+                // Generate smart suggestions
+                const suggestions = [];
+                
+                if (overdue.length > 0) {
+                    suggestions.push({
+                        icon: '🚨',
+                        title: `Clear ${overdue.length} Overdue Task${overdue.length > 1 ? 's' : ''}`,
+                        desc: `"${overdue[0].title}" is overdue. Consider completing it now or rescheduling.`,
+                        action: `Focus on: ${overdue[0].title}`
+                    });
+                }
+                
+                if (priorities.high > 3) {
+                    suggestions.push({
+                        icon: '⚡',
+                        title: 'Too Many High Priority Tasks',
+                        desc: `You have ${priorities.high} high-priority items. Try to limit to 3 per day for better focus.`,
+                        action: 'Review and reprioritize'
+                    });
+                }
+                
+                if (topCategory && topCategory[1] > 3) {
+                    suggestions.push({
+                        icon: '📁',
+                        title: `${topCategory[0]} Tasks Piling Up`,
+                        desc: `${topCategory[1]} tasks in ${topCategory[0]}. Consider batching similar tasks together.`,
+                        action: `Batch ${topCategory[0]} tasks`
+                    });
+                }
+                
+                if (completionRate < 30 && todos.length > 5) {
+                    suggestions.push({
+                        icon: '📈',
+                        title: 'Boost Your Completion Rate',
+                        desc: `Only ${completionRate}% complete. Try the "2-minute rule" - if it takes less than 2 minutes, do it now!`,
+                        action: 'Quick wins first'
+                    });
+                }
+                
+                if (pending.filter(t => !t.dueDate).length > 5) {
+                    suggestions.push({
+                        icon: '📅',
+                        title: 'Add Due Dates',
+                        desc: `${pending.filter(t => !t.dueDate).length} tasks without due dates. Adding deadlines increases completion by 40%!`,
+                        action: 'Schedule your tasks'
+                    });
+                }
+                
+                if (completed.length > 0 && pending.length < 3) {
+                    suggestions.push({
+                        icon: '🎉',
+                        title: 'Great Progress!',
+                        desc: `You've completed ${completed.length} tasks! You're almost caught up. Keep the momentum going!`,
+                        action: 'Finish strong'
+                    });
+                }
+                
+                // Always add a motivational tip
+                const tips = [
+                    { icon: '🧠', title: 'Deep Work Tip', desc: 'Block 2 hours of uninterrupted time for your most important task.' },
+                    { icon: '✅', title: 'Quick Win Strategy', desc: 'Start with a small, easy task to build momentum.' },
+                    { icon: '🎯', title: 'Focus Technique', desc: 'Use the Pomodoro method: 25 min work, 5 min break.' },
+                    { icon: '🌅', title: 'Morning Routine', desc: 'Tackle your hardest task first when your energy is highest.' }
+                ];
+                suggestions.push(tips[Math.floor(Math.random() * tips.length)]);
+                
+                const suggestionsHtml = suggestions.map(s => `
+                    <div style="background: rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; margin-bottom: 10px;">
+                        <div style="display: flex; align-items: flex-start; gap: 12px;">
+                            <div style="font-size: 24px;">${s.icon}</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 4px;">${s.title}</div>
+                                <div style="color: rgba(255,255,255,0.7); font-size: 13px; line-height: 1.5;">${s.desc}</div>
+                                ${s.action ? `<div style="color: #a5b4fc; font-size: 12px; margin-top: 6px;">💡 ${s.action}</div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Stats summary
+                const statsHtml = `
+                    <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                        <div style="background: rgba(99,102,241,0.2); padding: 10px 16px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700;">${pending.length}</div>
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Pending</div>
+                        </div>
+                        <div style="background: rgba(16,185,129,0.2); padding: 10px 16px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700;">${completed.length}</div>
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Done</div>
+                        </div>
+                        <div style="background: rgba(239,68,68,0.2); padding: 10px 16px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700;">${overdue.length}</div>
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Overdue</div>
+                        </div>
+                        <div style="background: rgba(251,191,36,0.2); padding: 10px 16px; border-radius: 8px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: 700;">${completionRate}%</div>
+                            <div style="font-size: 11px; color: rgba(255,255,255,0.6);">Complete</div>
+                        </div>
+                    </div>
+                `;
+                
+                showAIResults('💡 Smart Suggestions', statsHtml + suggestionsHtml);
+                
+            } catch (err) {
+                console.error('AI suggestions error:', err);
+                showAIResults('❌ Error', 'Failed to generate suggestions. Please try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '💡 Smart Suggestions';
+            }
+        }
         
         // Helpers
         function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
